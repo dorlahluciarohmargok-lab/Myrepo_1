@@ -307,26 +307,51 @@ body::before {
 
 .todo-add-form {
   display: flex;
+  flex-direction: column;
   gap: 8px;
   margin-bottom: 16px;
-}
-.todo-input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1.5px solid var(--secondary);
+  background: var(--card-bg);
   border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.todo-add-form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.todo-title-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 12px;
   font-size: 14px;
   font-family: 'Noto Sans SC', sans-serif;
   outline: none;
   background: var(--card-bg);
   transition: border-color 0.2s;
 }
-.todo-input:focus { border-color: var(--primary); }
+.todo-title-input:focus { border-color: var(--primary); }
+.todo-content-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 12px;
+  font-size: 13px;
+  font-family: 'Noto Sans SC', sans-serif;
+  outline: none;
+  background: var(--card-bg);
+  transition: border-color 0.2s;
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+}
+.todo-content-input:focus { border-color: var(--primary); }
 .todo-time-input {
   width: 90px;
-  padding: 12px 10px;
+  padding: 10px 10px;
   border: 1.5px solid var(--secondary);
-  border-radius: var(--radius);
+  border-radius: 12px;
   font-size: 13px;
   font-family: 'Nunito', sans-serif;
   outline: none;
@@ -348,6 +373,7 @@ body::before {
   justify-content: center;
   box-shadow: 0 3px 12px rgba(255,99,71,0.3);
   transition: transform 0.2s;
+  flex-shrink: 0;
 }
 .todo-add-btn:active { transform: scale(0.9); }
 
@@ -357,9 +383,6 @@ body::before {
   gap: 10px;
 }
 .todo-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   background: var(--card-bg);
   border-radius: var(--radius);
   padding: 14px 16px;
@@ -372,12 +395,18 @@ body::before {
 .todo-item.completed {
   opacity: 0.6;
 }
-.todo-item.completed .todo-item-text {
+.todo-item.completed .todo-item-title {
   text-decoration: line-through;
   color: var(--text-secondary);
 }
 @keyframes slideIn {
   to { opacity: 1; transform: translateX(0); }
+}
+.todo-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
 }
 .todo-checkbox {
   width: 22px;
@@ -401,12 +430,13 @@ body::before {
   font-size: 12px;
   font-weight: 700;
 }
-.todo-item-content { flex: 1; min-width: 0; }
-.todo-item-text {
-  font-size: 14px;
-  font-weight: 400;
+.todo-item-info { flex: 1; min-width: 0; }
+.todo-item-title {
+  font-size: 15px;
+  font-weight: 600;
   transition: all 0.3s ease;
   word-break: break-word;
+  color: var(--text-primary);
 }
 .todo-item-due {
   font-size: 11px;
@@ -416,6 +446,15 @@ body::before {
 }
 .todo-item-due.overdue { color: var(--primary); font-weight: 600; }
 .todo-item-due.upcoming { color: #27AE60; }
+.todo-expand-indicator {
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.todo-item.expanded .todo-expand-indicator {
+  transform: rotate(180deg);
+}
 .todo-delete-btn {
   width: 28px;
   height: 28px;
@@ -432,6 +471,146 @@ body::before {
   flex-shrink: 0;
 }
 .todo-delete-btn:hover { background: var(--secondary); color: var(--primary); }
+
+/* Expanded content area */
+.todo-item-expanded {
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--secondary);
+}
+.todo-item.expanded .todo-item-expanded {
+  display: block;
+}
+.todo-expanded-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+.todo-toggle-edit-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border: 1px solid var(--secondary);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+  transition: all 0.2s;
+}
+.todo-toggle-edit-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.todo-markdown-view {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+.todo-edit-area {
+  display: none;
+}
+.todo-edit-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 12px;
+  font-size: 13px;
+  font-family: 'Noto Sans SC', sans-serif;
+  outline: none;
+  background: var(--card-bg);
+  resize: vertical;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+}
+.todo-edit-textarea:focus { border-color: var(--primary); }
+.todo-edit-save-btn {
+  margin-top: 8px;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.todo-edit-save-btn:hover { background: var(--primary-dark); }
+
+/* Markdown rendered styles */
+.todo-markdown-view h1 { font-size: 20px; font-weight: 700; margin: 12px 0 8px; }
+.todo-markdown-view h2 { font-size: 18px; font-weight: 700; margin: 10px 0 6px; }
+.todo-markdown-view h3 { font-size: 16px; font-weight: 600; margin: 8px 0 4px; }
+.todo-markdown-view h4 { font-size: 15px; font-weight: 600; margin: 8px 0 4px; }
+.todo-markdown-view h5 { font-size: 14px; font-weight: 600; margin: 6px 0 3px; }
+.todo-markdown-view h6 { font-size: 13px; font-weight: 600; margin: 6px 0 3px; color: var(--text-secondary); }
+.todo-markdown-view p { margin: 6px 0; }
+.todo-markdown-view strong { font-weight: 700; }
+.todo-markdown-view em { font-style: italic; }
+.todo-markdown-view del { text-decoration: line-through; color: var(--text-secondary); }
+.todo-markdown-view a { color: var(--primary); text-decoration: none; border-bottom: 1px solid var(--primary-light); }
+.todo-markdown-view a:hover { color: var(--primary-dark); }
+.todo-markdown-view code {
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12px;
+}
+.todo-markdown-view pre {
+  background: #e9ecef;
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.todo-markdown-view pre code {
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.todo-markdown-view blockquote {
+  border-left: 3px solid var(--primary-light);
+  padding-left: 12px;
+  margin: 8px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.todo-markdown-view ul, .todo-markdown-view ol {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+.todo-markdown-view li { margin: 3px 0; }
+.todo-markdown-view ul.task-list {
+  list-style: none;
+  padding-left: 0;
+}
+.todo-markdown-view ul.task-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.todo-markdown-view ul.task-list li input[type="checkbox"] {
+  margin-top: 4px;
+  accent-color: var(--primary);
+}
+.todo-markdown-view img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 6px 0;
+}
+.todo-markdown-view hr {
+  border: none;
+  border-top: 1px solid var(--secondary);
+  margin: 12px 0;
+}
 
 /* Mood View */
 .mood-section { padding-top: 10px; }
@@ -674,9 +853,12 @@ body::before {
           <div class="todo-count" id="todoCount">0 项</div>
         </div>
         <div class="todo-add-form">
-          <input type="text" class="todo-input" id="todoInput" placeholder="添加新任务...">
-          <input type="time" class="todo-time-input" id="todoTimeInput">
-          <button class="todo-add-btn" id="todoAddBtn">+</button>
+          <div class="todo-add-form-row">
+            <input type="text" class="todo-title-input" id="todoTitleInput" placeholder="任务标题...">
+            <input type="time" class="todo-time-input" id="todoTimeInput">
+            <button class="todo-add-btn" id="todoAddBtn">+</button>
+          </div>
+          <textarea class="todo-content-input" id="todoContentInput" rows="3" placeholder="支持 Markdown 语法..."></textarea>
         </div>
         <div class="todo-list" id="todoList"></div>
       </div>
@@ -1059,6 +1241,175 @@ function updateQuote() {
   }
 }
 
+// ========== MARKDOWN RENDERER ==========
+function renderMarkdown(text) {
+  if (!text) return '';
+  let html = text;
+
+  // Escape HTML first
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Code blocks (``` ... ```)
+  html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, function(match, lang, code) {
+    return '<pre><code>' + code.trim() + '</code></pre>';
+  });
+
+  // Split into lines for block-level processing
+  const lines = html.split('\n');
+  let result = [];
+  let inList = false;
+  let listType = '';
+  let listStack = [];
+  let inBlockquote = false;
+  let blockquoteLines = [];
+
+  function closeAllLists() {
+    while (listStack.length > 0) {
+      const t = listStack.pop();
+      result.push(t === 'ul' ? '</ul>' : '</ol>');
+    }
+    inList = false;
+  }
+
+  function closeBlockquote() {
+    if (inBlockquote) {
+      result.push('<blockquote>' + renderInline(blockquoteLines.join('<br>')) + '</blockquote>');
+      blockquoteLines = [];
+      inBlockquote = false;
+    }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Skip lines that are part of pre blocks
+    if (line.match(/^&lt;pre&gt;/) || line.match(/^&lt;\/pre&gt;/)) {
+      closeAllLists();
+      closeBlockquote();
+      result.push(line);
+      continue;
+    }
+
+    // Horizontal rule
+    if (line.match(/^(-{3,}|\*{3,}|_{3,})$/)) {
+      closeAllLists();
+      closeBlockquote();
+      result.push('<hr>');
+      continue;
+    }
+
+    // Headings
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      closeAllLists();
+      closeBlockquote();
+      const level = headingMatch[1].length;
+      result.push(`<h${level}>${renderInline(headingMatch[2])}</h${level}>`);
+      continue;
+    }
+
+    // Blockquote
+    const bqMatch = line.match(/^&gt;\s?(.*)$/);
+    if (bqMatch) {
+      closeAllLists();
+      inBlockquote = true;
+      blockquoteLines.push(bqMatch[1]);
+      continue;
+    } else if (inBlockquote) {
+      closeBlockquote();
+    }
+
+    // Task list
+    const taskMatch = line.match(/^(\s*)- \[([ xX])\]\s+(.+)$/);
+    if (taskMatch) {
+      if (!inList || listType !== 'task') {
+        closeAllLists();
+        result.push('<ul class="task-list">');
+        listStack.push('ul');
+        inList = true;
+        listType = 'task';
+      }
+      const checked = taskMatch[2] !== ' ' ? ' checked disabled' : ' disabled';
+      result.push(`<li><input type="checkbox"${checked}><span>${renderInline(taskMatch[3])}</span></li>`);
+      continue;
+    }
+
+    // Unordered list
+    const ulMatch = line.match(/^(\s*)[-*+]\s+(.+)$/);
+    if (ulMatch && !taskMatch) {
+      closeBlockquote();
+      if (!inList || listType !== 'ul') {
+        closeAllLists();
+        result.push('<ul>');
+        listStack.push('ul');
+        inList = true;
+        listType = 'ul';
+      }
+      result.push(`<li>${renderInline(ulMatch[2])}</li>`);
+      continue;
+    }
+
+    // Ordered list
+    const olMatch = line.match(/^(\s*)\d+\.\s+(.+)$/);
+    if (olMatch) {
+      closeBlockquote();
+      if (!inList || listType !== 'ol') {
+        closeAllLists();
+        result.push('<ol>');
+        listStack.push('ol');
+        inList = true;
+        listType = 'ol';
+      }
+      result.push(`<li>${renderInline(olMatch[2])}</li>`);
+      continue;
+    }
+
+    // Empty line
+    if (line.trim() === '') {
+      closeAllLists();
+      closeBlockquote();
+      continue;
+    }
+
+    // Paragraph
+    closeAllLists();
+    closeBlockquote();
+    result.push(`<p>${renderInline(line)}</p>`);
+  }
+
+  closeAllLists();
+  closeBlockquote();
+
+  return result.join('\n');
+}
+
+function renderInline(text) {
+  if (!text) return '';
+
+  // Inline code (must be first to prevent inner processing)
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Images
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+  // Links
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  // Bold italic (must come before bold and italic)
+  text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // Italic
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Strikethrough
+  text = text.replace(/~~(.+?)~~/g, '<del>$1</del>');
+
+  return text;
+}
+
 // ========== TODO ==========
 function renderTodos() {
   const list = document.getElementById('todoList');
@@ -1067,31 +1418,52 @@ function renderTodos() {
   const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
   todos.forEach((todo, i) => {
+    // Backward compatibility: old todos may only have 'text' field
+    const title = todo.title || todo.text || '未命名任务';
+    const content = todo.content || '';
+    const dueTime = todo.dueTime || '';
+
     const item = document.createElement('div');
     item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
     item.style.animationDelay = `${i * 0.06}s`;
+    item.dataset.index = i;
 
     let dueClass = '';
     let dueText = '';
-    if (todo.dueTime) {
-      if (!todo.completed && todo.dueTime < nowTime) {
+    if (dueTime) {
+      if (!todo.completed && dueTime < nowTime) {
         dueClass = 'overdue';
-        dueText = `⚠️ 已超时 (${todo.dueTime})`;
+        dueText = `⚠️ 已超时 (${dueTime})`;
       } else if (!todo.completed) {
         dueClass = 'upcoming';
-        dueText = `📅 ${todo.dueTime}`;
+        dueText = `📅 ${dueTime}`;
       } else {
-        dueText = `${todo.dueTime}`;
+        dueText = `${dueTime}`;
       }
     }
 
+    const renderedContent = content ? renderMarkdown(content) : '<p style="color:var(--text-secondary);font-size:12px;">暂无详细内容</p>';
+
     item.innerHTML = `
-      <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" data-index="${i}"></div>
-      <div class="todo-item-content">
-        <div class="todo-item-text">${escapeHtml(todo.text)}</div>
-        ${todo.dueTime ? `<div class="todo-item-due ${dueClass}">${dueText}</div>` : ''}
+      <div class="todo-item-header">
+        <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" data-index="${i}"></div>
+        <div class="todo-item-info">
+          <div class="todo-item-title">${escapeHtml(title)}</div>
+          ${dueTime ? `<div class="todo-item-due ${dueClass}">${dueText}</div>` : ''}
+        </div>
+        <span class="todo-expand-indicator">▼</span>
+        <button class="todo-delete-btn" data-index="${i}">✕</button>
       </div>
-      <button class="todo-delete-btn" data-index="${i}">✕</button>
+      <div class="todo-item-expanded">
+        <div class="todo-expanded-toolbar">
+          <button class="todo-toggle-edit-btn" data-index="${i}">编辑</button>
+        </div>
+        <div class="todo-markdown-view">${renderedContent}</div>
+        <div class="todo-edit-area">
+          <textarea class="todo-edit-textarea" data-index="${i}" placeholder="支持 Markdown 语法...">${escapeHtml(content)}</textarea>
+          <button class="todo-edit-save-btn" data-index="${i}">保存</button>
+        </div>
+      </div>
     `;
     list.appendChild(item);
   });
@@ -1106,35 +1478,84 @@ function escapeHtml(text) {
 }
 
 document.getElementById('todoAddBtn').addEventListener('click', addTodo);
-document.getElementById('todoInput').addEventListener('keypress', e => {
+document.getElementById('todoTitleInput').addEventListener('keypress', e => {
   if (e.key === 'Enter') addTodo();
 });
 
 function addTodo() {
-  const input = document.getElementById('todoInput');
+  const titleInput = document.getElementById('todoTitleInput');
+  const contentInput = document.getElementById('todoContentInput');
   const timeInput = document.getElementById('todoTimeInput');
-  const text = input.value.trim();
-  if (!text) return;
-  todos.push({ text, dueTime: timeInput.value || '', completed: false });
+  const title = titleInput.value.trim();
+  if (!title) return;
+  todos.push({
+    id: Date.now(),
+    title: title,
+    content: contentInput.value || '',
+    dueTime: timeInput.value || '',
+    completed: false
+  });
   saveTodos();
   renderTodos();
-  input.value = '';
+  titleInput.value = '';
+  contentInput.value = '';
   timeInput.value = '';
 }
 
 document.getElementById('todoList').addEventListener('click', e => {
   const checkbox = e.target.closest('.todo-checkbox');
   const deleteBtn = e.target.closest('.todo-delete-btn');
+  const toggleEditBtn = e.target.closest('.todo-toggle-edit-btn');
+  const saveBtn = e.target.closest('.todo-edit-save-btn');
+  const header = e.target.closest('.todo-item-header');
+
   if (checkbox) {
+    e.stopPropagation();
     const idx = parseInt(checkbox.dataset.index);
     todos[idx].completed = !todos[idx].completed;
     saveTodos();
     renderTodos();
   } else if (deleteBtn) {
+    e.stopPropagation();
     const idx = parseInt(deleteBtn.dataset.index);
     todos.splice(idx, 1);
     saveTodos();
     renderTodos();
+  } else if (toggleEditBtn) {
+    e.stopPropagation();
+    const idx = parseInt(toggleEditBtn.dataset.index);
+    const item = toggleEditBtn.closest('.todo-item');
+    const markdownView = item.querySelector('.todo-markdown-view');
+    const editArea = item.querySelector('.todo-edit-area');
+    if (editArea.style.display === 'block') {
+      editArea.style.display = 'none';
+      markdownView.style.display = 'block';
+      toggleEditBtn.textContent = '编辑';
+    } else {
+      editArea.style.display = 'block';
+      markdownView.style.display = 'none';
+      toggleEditBtn.textContent = '查看';
+    }
+  } else if (saveBtn) {
+    e.stopPropagation();
+    const idx = parseInt(saveBtn.dataset.index);
+    const item = saveBtn.closest('.todo-item');
+    const textarea = item.querySelector('.todo-edit-textarea');
+    todos[idx].content = textarea.value;
+    saveTodos();
+    // Update the rendered markdown view
+    const markdownView = item.querySelector('.todo-markdown-view');
+    markdownView.innerHTML = todos[idx].content ? renderMarkdown(todos[idx].content) : '<p style="color:var(--text-secondary);font-size:12px;">暂无详细内容</p>';
+    // Switch back to view mode
+    const editArea = item.querySelector('.todo-edit-area');
+    const toggleBtn = item.querySelector('.todo-toggle-edit-btn');
+    editArea.style.display = 'none';
+    markdownView.style.display = 'block';
+    toggleBtn.textContent = '编辑';
+  } else if (header && !checkbox && !deleteBtn) {
+    // Toggle expand
+    const item = header.closest('.todo-item');
+    item.classList.toggle('expanded');
   }
 });
 
