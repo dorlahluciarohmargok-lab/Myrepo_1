@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄钟 - 待办软件</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        /* 番茄钟计时器样式 */
+        .timer-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .timer-display {
+            font-size: 72px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-pause:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-reset {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        /* 待办事项样式 */
+        .todo-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 10px;
+        }
+
+        .todo-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .todo-input {
+            flex: 1;
+            padding: 12px 18px;
+            font-size: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .todo-input:focus {
+            border-color: #ff6b6b;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 12px 25px;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .todo-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item:hover {
+            background: #f0f0f0;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #ff6b6b;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #f5576c;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            padding: 5px 10px;
+        }
+
+        .btn-delete:hover {
+            opacity: 1;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-size: 14px;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            border-radius: 3px;
+            transition: width 1s linear;
+        }
+
+        /* 滚动条样式 */
+        .todo-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .todo-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .todo-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .todo-list::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+
+        /* 完成提示动画 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .timer-complete {
+            animation: pulse 1s ease-in-out infinite;
+            color: #f5576c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍅 番茄钟待办软件</h1>
+        
+        <!-- 番茄钟计时器 -->
+        <div class="timer-section">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+            <div class="timer-controls">
+                <button class="btn btn-start" id="btnStart" onclick="startTimer()">开始</button>
+                <button class="btn btn-pause" id="btnPause" onclick="pauseTimer()" style="display: none;">暂停</button>
+                <button class="btn btn-reset" onclick="resetTimer()">重置</button>
+            </div>
+        </div>
+
+        <!-- 待办事项列表 -->
+        <div class="todo-section">
+            <h2>📝 待办事项</h2>
+            <div class="todo-input-group">
+                <input type="text" class="todo-input" id="todoInput" placeholder="添加新的待办事项..." onkeypress="handleKeyPress(event)">
+                <button class="btn btn-add" onclick="addTodo()">添加</button>
+            </div>
+            <ul class="todo-list" id="todoList"></ul>
+        </div>
+    </div>
+
+    <script>
+        // 番茄钟相关变量
+        let timerInterval = null;
+        let timeLeft = 25 * 60; // 25分钟，单位秒
+        const totalTime = 25 * 60;
+        let isRunning = false;
+
+        // 待办事项数据
+        let todos = JSON.parse(localStorage.getItem('pomodoroTodos')) || [];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTimerDisplay();
+            updateProgress();
+            renderTodos();
+        });
+
+        // 格式化时间显示
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 更新时间显示
+        function updateTimerDisplay() {
+            document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const progress = ((totalTime - timeLeft) / totalTime) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        // 开始计时
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                document.getElementById('btnStart').style.display = 'none';
+                document.getElementById('btnPause').style.display = 'inline-block';
+                
+                timerInterval = setInterval(function() {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                        updateProgress();
+                    } else {
+                        // 计时结束
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        document.getElementById('btnStart').style.display = 'inline-block';
+                        document.getElementById('btnPause').style.display = 'none';
+                        document.getElementById('timerDisplay').classList.add('timer-complete');
+                        alert('🎉 番茄时间结束！休息一下吧！');
+                    }
+                }, 1000);
+            }
+        }
+
+        // 暂停计时
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById('btnStart').style.display = 'inline-block';
+            document.getElementById('btnPause').style.display = 'none';
+        }
+
+        // 重置计时
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timeLeft = totalTime;
+            updateTimerDisplay();
+            updateProgress();
+            document.getElementById('btnStart').style.display = 'inline-block';
+            document.getElementById('btnPause').style.display = 'none';
+            document.getElementById('timerDisplay').classList.remove('timer-complete');
+        }
+
+        // 添加待办事项
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                const todo = {
+                    id: Date.now(),
+                    text: text,
+                    completed: false
+                };
+                todos.push(todo);
+                saveTodos();
+                renderTodos();
+                input.value = '';
+            }
+        }
+
+        // 按回车添加
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addTodo();
+            }
+        }
+
+        // 切换完成状态
+        function toggleTodo(id) {
+            todos = todos.map(todo => {
+                if (todo.id === id) {
+                    return { ...todo, completed: !todo.completed };
+                }
+                return todo;
+            });
+            saveTodos();
+            renderTodos();
+        }
+
+        // 删除待办事项
+        function deleteTodo(id) {
+            todos = todos.filter(todo => todo.id !== id);
+            saveTodos();
+            renderTodos();
+        }
+
+        // 保存到本地存储
+        function saveTodos() {
+            localStorage.setItem('pomodoroTodos', JSON.stringify(todos));
+        }
+
+        // 渲染待办列表
+        function renderTodos() {
+            const list = document.getElementById('todoList');
+            
+            if (todos.length === 0) {
+                list.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！</li>';
+                return;
+            }
+
+            list.innerHTML = todos.map(todo => `
+                <li class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
+                    <span class="todo-text">${escapeHtml(todo.text)}</span>
+                    <button class="btn-delete" onclick="deleteTodo(${todo.id})" title="删除">×</button>
+                </li>
+            `).join('');
+        }
+
+        // 转义HTML防止XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
