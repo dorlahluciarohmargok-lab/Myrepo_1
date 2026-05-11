@@ -2,269 +2,445 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>番茄钟 - 待办软件</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>番茄钟 - 智能待办</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #ff6b6b;
+            --primary-dark: #ee5a24;
+            --bg-morning: linear-gradient(135deg, #f6d365 0%, #fda085 50%, #ff6b6b 100%);
+            --bg-afternoon: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #43e97b 100%);
+            --bg-evening: linear-gradient(135deg, #2c3e50 0%, #4a00e0 50%, #8e2de2 100%);
+            --bg-night: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 20px;
-            padding-top: 30px;
+            padding: 0;
+            transition: background 2s ease;
+            overflow-x: hidden;
         }
 
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
+        .app-container {
             width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            aspect-ratio: 9/16;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px 16px;
+            padding-top: env(safe-area-inset-top, 20px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
         }
 
-        h1 {
+        /* Header */
+        .app-header {
             text-align: center;
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 26px;
+            margin-bottom: 12px;
         }
 
-        /* 模式标签页 */
+        .app-header h1 {
+            color: white;
+            font-size: 22px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-weight: 700;
+        }
+
+        /* Weather Widget */
+        .weather-widget {
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .weather-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weather-icon {
+            font-size: 36px;
+            line-height: 1;
+        }
+
+        .weather-info {
+            color: white;
+        }
+
+        .weather-temp {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .weather-desc {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        .weather-right {
+            text-align: right;
+            color: white;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        /* Mood Selector */
+        .mood-section {
+            background: rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .mood-title {
+            color: white;
+            font-size: 13px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .mood-options {
+            display: flex;
+            justify-content: space-around;
+            gap: 8px;
+        }
+
+        .mood-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mood-btn:hover, .mood-btn.active {
+            transform: scale(1.2);
+            border-color: var(--primary);
+            background: rgba(255,107,107,0.3);
+            box-shadow: 0 0 15px rgba(255,107,107,0.4);
+        }
+
+        /* Quote Section */
+        .quote-section {
+            background: rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quote-text {
+            color: white;
+            font-size: 13px;
+            line-height: 1.6;
+            font-style: italic;
+            opacity: 0.95;
+        }
+
+        /* Timer Mode Tabs */
         .mode-tabs {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
         }
 
         .mode-tab {
-            padding: 10px 20px;
-            font-size: 14px;
-            border: 2px solid #ff6b6b;
-            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 13px;
+            border: 1.5px solid rgba(255,255,255,0.4);
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: white;
-            color: #ff6b6b;
+            background: rgba(255,255,255,0.1);
+            color: white;
             font-weight: 600;
+            backdrop-filter: blur(5px);
         }
 
         .mode-tab:hover {
-            background: #fff5f5;
+            background: rgba(255,255,255,0.2);
         }
 
         .mode-tab.active {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border-color: transparent;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
         }
 
-        /* 计时器样式 */
+        /* Timer Section */
         .timer-section {
+            background: rgba(255,255,255,0.13);
+            border-radius: 16px;
+            padding: 20px 16px;
+            margin-bottom: 12px;
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #eee;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .timer-display {
-            font-size: 56px;
-            font-weight: bold;
-            color: #ff6b6b;
-            margin-bottom: 15px;
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
             font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #ffd93d);
+            border-radius: 3px;
+            transition: width 1s linear;
+            width: 0%;
         }
 
         .timer-setter {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
         }
 
         .time-input-group {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
 
         .time-input-group label {
-            font-size: 13px;
-            color: #666;
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
         }
 
         .time-input {
-            width: 55px;
-            padding: 8px 8px;
-            font-size: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            width: 48px;
+            padding: 6px;
+            font-size: 14px;
+            border: 1.5px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
             outline: none;
             text-align: center;
+            background: rgba(255,255,255,0.15);
+            color: white;
             transition: border-color 0.3s;
         }
 
         .time-input:focus {
-            border-color: #ff6b6b;
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.25);
         }
 
         .timer-controls {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin-top: 12px;
+            gap: 10px;
         }
 
         .btn {
-            padding: 10px 24px;
+            padding: 10px 22px;
             font-size: 14px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
+            touch-action: manipulation;
         }
 
         .btn-start {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
         }
 
-        .btn-start:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
-        }
+        .btn-start:hover { transform: translateY(-2px); }
 
         .btn-pause {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #f093fb, #f5576c);
             color: white;
         }
 
-        .btn-pause:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
-        }
+        .btn-pause:hover { transform: translateY(-2px); }
 
         .btn-reset {
-            background: #e0e0e0;
-            color: #333;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1.5px solid rgba(255,255,255,0.3);
         }
 
-        .btn-reset:hover {
-            background: #d0d0d0;
-            transform: translateY(-2px);
-        }
+        .btn-reset:hover { background: rgba(255,255,255,0.3); }
 
         .btn-set {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
+            padding: 6px 14px;
+            font-size: 12px;
         }
 
-        .btn-set:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        /* No Timer / Clock Section */
+        .clock-display {
+            font-size: 44px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.3);
+            margin-bottom: 6px;
         }
 
-        /* 待办事项样式 */
-        .todo-section h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 18px;
+        .clock-date {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Todo Section */
+        .todo-section {
+            background: rgba(255,255,255,0.92);
+            border-radius: 16px;
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+
+        .todo-header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .todo-header h2 {
+            color: #333;
+            font-size: 16px;
+        }
+
+        .todo-count {
+            font-size: 11px;
+            color: #999;
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 10px;
         }
 
         .todo-form {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 12px;
             background: #f8f9fa;
             border-radius: 12px;
         }
 
         .todo-form-row {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .todo-input {
             flex: 1;
-            padding: 10px 15px;
+            padding: 10px 14px;
             font-size: 14px;
-            border: 2px solid #e0e0e0;
+            border: 1.5px solid #e0e0e0;
             border-radius: 20px;
             outline: none;
             transition: border-color 0.3s;
         }
 
-        .todo-input:focus {
-            border-color: #ff6b6b;
-        }
+        .todo-input:focus { border-color: var(--primary); }
 
         .todo-datetime {
-            padding: 10px 12px;
-            font-size: 13px;
-            border: 2px solid #e0e0e0;
-            border-radius: 20px;
+            padding: 8px 10px;
+            font-size: 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
             outline: none;
-            transition: border-color 0.3s;
             background: white;
-            min-width: 170px;
+            flex: 1;
         }
 
-        .todo-datetime:focus {
-            border-color: #ff6b6b;
-        }
+        .todo-datetime:focus { border-color: var(--primary); }
 
         .btn-add {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 10px 20px;
-        }
-
-        .btn-add:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+            padding: 8px 16px;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
         .todo-list {
             list-style: none;
-            max-height: 300px;
+            flex: 1;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .todo-item {
-            display: flex;
-            flex-direction: column;
-            padding: 12px;
+            padding: 10px 12px;
             background: #f8f9fa;
             border-radius: 10px;
-            margin-bottom: 8px;
-            transition: all 0.3s ease;
+            margin-bottom: 6px;
             border-left: 4px solid transparent;
-        }
-
-        .todo-item:hover {
-            background: #f0f0f0;
+            transition: all 0.3s ease;
         }
 
         .todo-item.completed {
-            opacity: 0.6;
+            opacity: 0.5;
             border-left-color: #4caf50 !important;
         }
 
@@ -273,193 +449,145 @@
             color: #999;
         }
 
-        .todo-item.overdue {
-            border-left-color: #f5576c;
-        }
-
-        .todo-item.upcoming {
-            border-left-color: #ff9800;
-        }
+        .todo-item.overdue { border-left-color: #f5576c; }
+        .todo-item.upcoming { border-left-color: #ff9800; }
 
         .todo-item-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .todo-checkbox {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             cursor: pointer;
-            accent-color: #ff6b6b;
+            accent-color: var(--primary);
             flex-shrink: 0;
         }
 
         .todo-content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            min-width: 0;
         }
 
         .todo-text {
-            font-size: 14px;
+            font-size: 13px;
             color: #333;
             word-break: break-word;
+            line-height: 1.4;
         }
 
         .todo-due-time {
             font-size: 11px;
             color: #888;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            margin-top: 2px;
         }
 
-        .todo-due-time.overdue-text {
-            color: #f5576c;
-            font-weight: 600;
-        }
-
-        .todo-due-time.upcoming-text {
-            color: #ff9800;
-        }
+        .todo-due-time.overdue-text { color: #f5576c; font-weight: 600; }
+        .todo-due-time.upcoming-text { color: #ff9800; }
 
         .btn-delete {
             background: none;
             border: none;
             color: #f5576c;
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.3s;
-            padding: 5px 8px;
+            opacity: 0.6;
+            padding: 4px 6px;
             flex-shrink: 0;
         }
 
-        .btn-delete:hover {
-            opacity: 1;
-        }
+        .btn-delete:hover { opacity: 1; }
 
         .empty-message {
             text-align: center;
-            color: #999;
-            padding: 25px;
+            color: #aaa;
+            padding: 30px;
             font-size: 13px;
         }
 
-        /* 进度条 */
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e0e0e0;
-            border-radius: 3px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            border-radius: 3px;
-            transition: width 1s linear;
-            width: 0%;
-        }
-
-        /* 不计时模式样式 */
-        .no-timer-section {
-            text-align: center;
-            padding: 30px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .no-timer-section .current-time {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff6b6b;
-            margin-bottom: 10px;
-        }
-
-        .no-timer-section .current-date {
-            font-size: 16px;
-            color: #666;
-        }
-
-        /* 滚动条样式 */
-        .todo-list::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .todo-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .todo-list::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-        }
-
-        .todo-list::-webkit-scrollbar-thumb:hover {
-            background: #a1a1a1;
-        }
-
-        /* 完成提示动画 */
+        /* Timer complete animation */
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.03); }
         }
 
         .timer-complete {
             animation: pulse 1s ease-in-out infinite;
-            color: #f5576c;
+            color: #ffd93d !important;
         }
 
-        /* 响应式 */
-        @media (max-width: 500px) {
-            .timer-display {
-                font-size: 42px;
-            }
-            
-            .todo-form-row {
-                flex-direction: column;
-            }
-            
-            .todo-datetime {
-                min-width: auto;
-                width: 100%;
-            }
+        /* Scrollbar */
+        .todo-list::-webkit-scrollbar { width: 4px; }
+        .todo-list::-webkit-scrollbar-track { background: transparent; }
+        .todo-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 
-            .mode-tabs {
-                gap: 8px;
-            }
+        .app-container::-webkit-scrollbar { width: 0; display: none; }
 
-            .mode-tab {
-                padding: 8px 16px;
-                font-size: 13px;
-            }
+        /* Responsive fine-tuning */
+        @media (max-width: 380px) {
+            .timer-display { font-size: 38px; }
+            .clock-display { font-size: 36px; }
+            .weather-icon { font-size: 28px; }
+            .mood-btn { width: 38px; height: 38px; font-size: 18px; }
+        }
+
+        @media (min-height: 800px) {
+            .app-container { padding: 24px 18px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🍅 番茄钟待办软件</h1>
-        
-        <!-- 模式选择标签 -->
-        <div class="mode-tabs">
-            <button class="mode-tab active" onclick="switchMode('countdown')" id="tab-countdown">⏱️ 倒计时</button>
-            <button class="mode-tab" onclick="switchMode('stopwatch')" id="tab-stopwatch">⏳ 正向计时</button>
-            <button class="mode-tab" onclick="switchMode('notimer')" id="tab-notimer">🕐 不计时</button>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <h1>🍅 番茄钟智能待办</h1>
         </div>
 
-        <!-- 倒计时模式 -->
-        <div class="timer-section" id="section-countdown">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+        <!-- Weather Widget -->
+        <div class="weather-widget" id="weatherWidget">
+            <div class="weather-left">
+                <span class="weather-icon" id="weatherIcon">☀️</span>
+                <div class="weather-info">
+                    <div class="weather-temp" id="weatherTemp">26°C</div>
+                    <div class="weather-desc" id="weatherDesc">晴天</div>
+                </div>
             </div>
+            <div class="weather-right">
+                <div id="weatherCity">定位中...</div>
+                <div id="weatherExtra">湿度: 65%</div>
+            </div>
+        </div>
+
+        <!-- Mood Selector -->
+        <div class="mood-section">
+            <div class="mood-title">今日心情</div>
+            <div class="mood-options">
+                <button class="mood-btn" data-mood="happy" onclick="selectMood('happy')">😊</button>
+                <button class="mood-btn" data-mood="excited" onclick="selectMood('excited')">🤩</button>
+                <button class="mood-btn" data-mood="neutral" onclick="selectMood('neutral')">😐</button>
+                <button class="mood-btn" data-mood="tired" onclick="selectMood('tired')">😴</button>
+                <button class="mood-btn" data-mood="sad" onclick="selectMood('sad')">😢</button>
+            </div>
+        </div>
+
+        <!-- Motivational Quote -->
+        <div class="quote-section">
+            <div class="quote-text" id="quoteText">加载中...</div>
+        </div>
+
+        <!-- Timer Mode Tabs -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" onclick="switchMode('countdown')" id="tab-countdown">⏱ 倒计时</button>
+            <button class="mode-tab" onclick="switchMode('stopwatch')" id="tab-stopwatch">⏳ 正计时</button>
+            <button class="mode-tab" onclick="switchMode('notimer')" id="tab-notimer">🕐 时钟</button>
+        </div>
+
+        <!-- Countdown Mode -->
+        <div class="timer-section" id="section-countdown">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             <div class="timer-display" id="timerDisplay">00:00:00</div>
-            
             <div class="timer-setter">
                 <div class="time-input-group">
                     <label>时</label>
@@ -475,34 +603,35 @@
                 </div>
                 <button class="btn btn-set" onclick="setTimer()">设置</button>
             </div>
-            
             <div class="timer-controls">
                 <button class="btn btn-start" id="btnStart" onclick="startCountdown()">开始</button>
-                <button class="btn btn-pause" id="btnPause" onclick="pauseTimer()" style="display: none;">暂停</button>
+                <button class="btn btn-pause" id="btnPause" onclick="pauseTimer()" style="display:none;">暂停</button>
                 <button class="btn btn-reset" onclick="resetCountdown()">重置</button>
             </div>
         </div>
 
-        <!-- 正向计时模式 -->
-        <div class="timer-section" id="section-stopwatch" style="display: none;">
+        <!-- Stopwatch Mode -->
+        <div class="timer-section" id="section-stopwatch" style="display:none;">
             <div class="timer-display" id="stopwatchDisplay">00:00:00</div>
-            
             <div class="timer-controls">
-                <button class="btn btn-start" id="btnStopwatchStart" onclick="startStopwatch()">开始</button>
-                <button class="btn btn-pause" id="btnStopwatchPause" onclick="pauseStopwatch()" style="display: none;">暂停</button>
+                <button class="btn btn-start" id="btnSwStart" onclick="startStopwatch()">开始</button>
+                <button class="btn btn-pause" id="btnSwPause" onclick="pauseStopwatch()" style="display:none;">暂停</button>
                 <button class="btn btn-reset" onclick="resetStopwatch()">重置</button>
             </div>
         </div>
 
-        <!-- 不计时模式 -->
-        <div class="no-timer-section" id="section-notimer" style="display: none;">
-            <div class="current-time" id="currentTime">00:00:00</div>
-            <div class="current-date" id="currentDate">2024年01月01日 星期一</div>
+        <!-- No Timer / Clock Mode -->
+        <div class="timer-section" id="section-notimer" style="display:none;">
+            <div class="clock-display" id="currentTime">00:00:00</div>
+            <div class="clock-date" id="currentDate">加载中...</div>
         </div>
 
-        <!-- 待办事项列表 -->
+        <!-- Todo List -->
         <div class="todo-section">
-            <h2>📝 待办事项</h2>
+            <div class="todo-header">
+                <h2>📝 待办事项</h2>
+                <span class="todo-count" id="todoCount">0 项</span>
+            </div>
             <div class="todo-form">
                 <div class="todo-form-row">
                     <input type="text" class="todo-input" id="todoInput" placeholder="添加新的待办事项...">
@@ -516,18 +645,150 @@
         </div>
     </div>
 
+
     <script>
+        // ==================== 背景主题（根据时间变化） ====================
+        function updateBackground() {
+            const hour = new Date().getHours();
+            let bg;
+            if (hour >= 6 && hour < 12) {
+                bg = 'linear-gradient(135deg, #f6d365 0%, #fda085 50%, #ff6b6b 100%)';
+            } else if (hour >= 12 && hour < 17) {
+                bg = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%)';
+            } else if (hour >= 17 && hour < 20) {
+                bg = 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 30%, #ee5a24 100%)';
+            } else {
+                bg = 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)';
+            }
+            document.body.style.background = bg;
+        }
+
+        // ==================== 天气模块 ====================
+        function updateWeather() {
+            // 模拟天气数据（可替换为真实API）
+            const weatherData = [
+                { icon: '☀️', temp: '28°C', desc: '晴天', humidity: '45%', city: '北京' },
+                { icon: '⛅', temp: '24°C', desc: '多云', humidity: '60%', city: '上海' },
+                { icon: '🌤️', temp: '26°C', desc: '晴间多云', humidity: '55%', city: '深圳' },
+                { icon: '🌧️', temp: '18°C', desc: '小雨', humidity: '85%', city: '杭州' },
+                { icon: '⛈️', temp: '20°C', desc: '雷阵雨', humidity: '90%', city: '广州' },
+                { icon: '🌫️', temp: '15°C', desc: '雾', humidity: '95%', city: '成都' },
+                { icon: '❄️', temp: '-2°C', desc: '雪', humidity: '70%', city: '哈尔滨' },
+                { icon: '🌬️', temp: '22°C', desc: '大风', humidity: '40%', city: '大连' }
+            ];
+
+            const hour = new Date().getHours();
+            let idx;
+            if (hour >= 6 && hour < 10) idx = 0;
+            else if (hour >= 10 && hour < 14) idx = 2;
+            else if (hour >= 14 && hour < 17) idx = 1;
+            else if (hour >= 17 && hour < 20) idx = 3;
+            else idx = 5;
+
+            const w = weatherData[idx];
+            document.getElementById('weatherIcon').textContent = w.icon;
+            document.getElementById('weatherTemp').textContent = w.temp;
+            document.getElementById('weatherDesc').textContent = w.desc;
+            document.getElementById('weatherCity').textContent = w.city;
+            document.getElementById('weatherExtra').textContent = '湿度: ' + w.humidity;
+
+            // 尝试调用真实天气API
+            tryFetchRealWeather();
+        }
+
+        function tryFetchRealWeather() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.current_weather) {
+                            const cw = data.current_weather;
+                            document.getElementById('weatherTemp').textContent = Math.round(cw.temperature) + '°C';
+                            const code = cw.weathercode;
+                            let icon = '☀️', desc = '晴天';
+                            if (code <= 1) { icon = '☀️'; desc = '晴天'; }
+                            else if (code <= 3) { icon = '⛅'; desc = '多云'; }
+                            else if (code <= 48) { icon = '🌫️'; desc = '雾/霾'; }
+                            else if (code <= 57) { icon = '🌦️'; desc = '毛毛雨'; }
+                            else if (code <= 67) { icon = '🌧️'; desc = '下雨'; }
+                            else if (code <= 77) { icon = '❄️'; desc = '下雪'; }
+                            else if (code <= 82) { icon = '🌧️'; desc = '阵雨'; }
+                            else if (code <= 86) { icon = '🌨️'; desc = '阵雪'; }
+                            else { icon = '⛈️'; desc = '雷暴'; }
+                            document.getElementById('weatherIcon').textContent = icon;
+                            document.getElementById('weatherDesc').textContent = desc;
+                            document.getElementById('weatherCity').textContent = '当前位置';
+                            document.getElementById('weatherExtra').textContent = '风速: ' + cw.windspeed + 'km/h';
+                        }
+                    }).catch(function(){});
+            }, function(){}, { timeout: 5000 });
+        }
+
+        // ==================== 心情模块 ====================
+        let currentMood = localStorage.getItem('pomodoroMood_' + new Date().toDateString()) || '';
+
+        function selectMood(mood) {
+            currentMood = mood;
+            localStorage.setItem('pomodoroMood_' + new Date().toDateString(), mood);
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mood === mood);
+            });
+        }
+
+        function loadMood() {
+            if (currentMood) {
+                document.querySelectorAll('.mood-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mood === currentMood);
+                });
+            }
+        }
+
+        // ==================== 励志语录模块 ====================
+        const quotes = [
+            '千里之行，始于足下。——老子',
+            '天行健，君子以自强不息。——《周易》',
+            '路漫漫其修远兮，吾将上下而求索。——屈原',
+            '宝剑锋从磨砺出，梅花香自苦寒来。',
+            '不积跬步，无以至千里；不积小流，无以成江海。——荀子',
+            '业精于勤，荒于嬉；行成于思，毁于随。——韩愈',
+            '志不强者智不达。——墨翟',
+            '锲而舍之，朽木不折；锲而不舍，金石可镂。——荀子',
+            '学而不思则罔，思而不学则殆。——孔子',
+            '知之者不如好之者，好之者不如乐之者。——孔子',
+            '三军可夺帅也，匹夫不可夺志也。——孔子',
+            '天将降大任于斯人也，必先苦其心志。——孟子',
+            '生于忧患，死于安乐。——孟子',
+            '穷则独善其身，达则兼济天下。——孟子',
+            '非淡泊无以明志，非宁静无以致远。——诸葛亮',
+            '读书破万卷，下笔如有神。——杜甫',
+            '山重水复疑无路，柳暗花明又一村。——陆游',
+            '长风破浪会有时，直挂云帆济沧海。——李白',
+            '不畏浮云遮望眼，自缘身在最高层。——王安石',
+            '欲穷千里目，更上一层楼。——王之涣',
+            '世上无难事，只要肯登攀。——毛泽东',
+            '星星之火，可以燎原。——毛泽东',
+            '书山有路勤为径，学海无涯苦作舟。——韩愈',
+            '少壮不努力，老大徒伤悲。——《长歌行》',
+            '黑发不知勤学早，白首方悔读书迟。——颜真卿'
+        ];
+
+        let currentQuoteIndex = 0;
+
+        function showQuote() {
+            currentQuoteIndex = Math.floor(Math.random() * quotes.length);
+            document.getElementById('quoteText').textContent = '「' + quotes[currentQuoteIndex] + '」';
+        }
+
         // ==================== 模式切换 ====================
         let currentMode = 'countdown';
 
         function switchMode(mode) {
             currentMode = mode;
-            
-            // 更新标签页状态
             document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(`tab-${mode}`).classList.add('active');
-            
-            // 显示对应区域
+            document.getElementById('tab-' + mode).classList.add('active');
             document.getElementById('section-countdown').style.display = mode === 'countdown' ? 'block' : 'none';
             document.getElementById('section-stopwatch').style.display = mode === 'stopwatch' ? 'block' : 'none';
             document.getElementById('section-notimer').style.display = mode === 'notimer' ? 'block' : 'none';
@@ -543,7 +804,7 @@
             const hrs = Math.floor(seconds / 3600);
             const mins = Math.floor((seconds % 3600) / 60);
             const secs = seconds % 60;
-            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            return hrs.toString().padStart(2, '0') + ':' + mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
         }
 
         function updateCountdownDisplay() {
@@ -551,24 +812,19 @@
         }
 
         function updateProgress() {
-            if (totalTime === 0) {
-                document.getElementById('progressFill').style.width = '0%';
-                return;
-            }
+            if (totalTime === 0) { document.getElementById('progressFill').style.width = '0%'; return; }
             const progress = ((totalTime - timeLeft) / totalTime) * 100;
-            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressFill').style.width = progress + '%';
         }
 
         function setTimer() {
-            const hours = parseInt(document.getElementById('hoursInput').value) || 0;
-            const minutes = parseInt(document.getElementById('minutesInput').value) || 0;
-            const seconds = parseInt(document.getElementById('secondsInput').value) || 0;
-            
-            const totalSeconds = Math.min(hours * 3600 + minutes * 60 + seconds, 24 * 3600);
-            
-            if (totalSeconds > 0) {
-                timeLeft = totalSeconds;
-                totalTime = totalSeconds;
+            const h = parseInt(document.getElementById('hoursInput').value) || 0;
+            const m = parseInt(document.getElementById('minutesInput').value) || 0;
+            const s = parseInt(document.getElementById('secondsInput').value) || 0;
+            const total = Math.min(h * 3600 + m * 60 + s, 24 * 3600);
+            if (total > 0) {
+                timeLeft = total;
+                totalTime = total;
                 updateCountdownDisplay();
                 updateProgress();
                 document.getElementById('timerDisplay').classList.remove('timer-complete');
@@ -580,7 +836,6 @@
                 isCountdownRunning = true;
                 document.getElementById('btnStart').style.display = 'none';
                 document.getElementById('btnPause').style.display = 'inline-block';
-                
                 countdownInterval = setInterval(function() {
                     if (timeLeft > 0) {
                         timeLeft--;
@@ -609,8 +864,7 @@
         function resetCountdown() {
             clearInterval(countdownInterval);
             isCountdownRunning = false;
-            timeLeft = 0;
-            totalTime = 0;
+            timeLeft = 0; totalTime = 0;
             updateCountdownDisplay();
             updateProgress();
             document.getElementById('btnStart').style.display = 'inline-block';
@@ -630,9 +884,8 @@
         function startStopwatch() {
             if (!isStopwatchRunning) {
                 isStopwatchRunning = true;
-                document.getElementById('btnStopwatchStart').style.display = 'none';
-                document.getElementById('btnStopwatchPause').style.display = 'inline-block';
-                
+                document.getElementById('btnSwStart').style.display = 'none';
+                document.getElementById('btnSwPause').style.display = 'inline-block';
                 stopwatchInterval = setInterval(function() {
                     stopwatchTime++;
                     updateStopwatchDisplay();
@@ -643,8 +896,8 @@
         function pauseStopwatch() {
             clearInterval(stopwatchInterval);
             isStopwatchRunning = false;
-            document.getElementById('btnStopwatchStart').style.display = 'inline-block';
-            document.getElementById('btnStopwatchPause').style.display = 'none';
+            document.getElementById('btnSwStart').style.display = 'inline-block';
+            document.getElementById('btnSwPause').style.display = 'none';
         }
 
         function resetStopwatch() {
@@ -652,25 +905,23 @@
             isStopwatchRunning = false;
             stopwatchTime = 0;
             updateStopwatchDisplay();
-            document.getElementById('btnStopwatchStart').style.display = 'inline-block';
-            document.getElementById('btnStopwatchPause').style.display = 'none';
+            document.getElementById('btnSwStart').style.display = 'inline-block';
+            document.getElementById('btnSwPause').style.display = 'none';
         }
 
-        // ==================== 不计时模块 ====================
+        // ==================== 不计时模块（时钟） ====================
         function updateCurrentTime() {
             const now = new Date();
-            
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
-            
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const s = now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('currentTime').textContent = h + ':' + m + ':' + s;
+
             const year = now.getFullYear();
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
             const day = now.getDate().toString().padStart(2, '0');
             const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            const weekday = weekdays[now.getDay()];
-            document.getElementById('currentDate').textContent = `${year}年${month}月${day}日 ${weekday}`;
+            document.getElementById('currentDate').textContent = year + '年' + month + '月' + day + '日 ' + weekdays[now.getDay()];
         }
 
         // ==================== 待办事项模块 ====================
@@ -679,25 +930,21 @@
         function setDefaultDueTime() {
             const now = new Date();
             now.setHours(now.getHours() + 1);
-            const formatted = now.toISOString().slice(0, 16);
-            document.getElementById('todoDueTime').value = formatted;
+            document.getElementById('todoDueTime').value = now.toISOString().slice(0, 16);
         }
 
         function addTodo() {
             const input = document.getElementById('todoInput');
-            const dueTimeInput = document.getElementById('todoDueTime');
+            const dueInput = document.getElementById('todoDueTime');
             const text = input.value.trim();
-            const dueTime = dueTimeInput.value;
-            
             if (text) {
-                const todo = {
+                todos.push({
                     id: Date.now(),
                     text: text,
-                    dueTime: dueTime,
+                    dueTime: dueInput.value,
                     completed: false,
                     createdAt: new Date().toISOString()
-                };
-                todos.push(todo);
+                });
                 saveTodos();
                 renderTodos();
                 input.value = '';
@@ -705,25 +952,18 @@
             }
         }
 
-        document.getElementById('todoInput').addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                addTodo();
-            }
+        document.getElementById('todoInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addTodo();
         });
 
         function toggleTodo(id) {
-            todos = todos.map(todo => {
-                if (todo.id === id) {
-                    return { ...todo, completed: !todo.completed };
-                }
-                return todo;
-            });
+            todos = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
             saveTodos();
             renderTodos();
         }
 
         function deleteTodo(id) {
-            todos = todos.filter(todo => todo.id !== id);
+            todos = todos.filter(t => t.id !== id);
             saveTodos();
             renderTodos();
         }
@@ -734,91 +974,59 @@
 
         function formatDueTime(dueTimeStr) {
             if (!dueTimeStr) return { text: '无截止时间', status: 'normal' };
-            
-            const dueDate = new Date(dueTimeStr);
+            const due = new Date(dueTimeStr);
             const now = new Date();
-            const diff = dueDate - now;
-            
-            if (diff < 0) {
-                return { text: `已过期 (${formatDateTime(dueDate)})`, status: 'overdue' };
-            }
-            
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            
-            if (hours < 1 && minutes < 30) {
-                return { text: `即将到期: ${minutes}分钟后`, status: 'upcoming' };
-            }
-            
-            if (hours < 24) {
-                return { text: `剩余 ${hours}小时${minutes}分钟`, status: 'normal' };
-            }
-            
-            return { text: formatDateTime(dueDate), status: 'normal' };
+            const diff = due - now;
+            if (diff < 0) return { text: '已过期 (' + formatDateTime(due) + ')', status: 'overdue' };
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            if (hours < 1 && minutes < 30) return { text: '即将到期: ' + minutes + '分钟后', status: 'upcoming' };
+            if (hours < 24) return { text: '剩余 ' + hours + '小时' + minutes + '分钟', status: 'normal' };
+            return { text: formatDateTime(due), status: 'normal' };
         }
 
-        function formatDateTime(date) {
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            return `${month}-${day} ${hours}:${minutes}`;
+        function formatDateTime(d) {
+            return (d.getMonth()+1).toString().padStart(2,'0') + '-' + d.getDate().toString().padStart(2,'0') + ' ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
         }
 
         function getTodoStatusClass(todo) {
             if (todo.completed) return 'completed';
             if (!todo.dueTime) return '';
-            
-            const dueDate = new Date(todo.dueTime);
-            const now = new Date();
-            const diff = dueDate - now;
-            
+            const diff = new Date(todo.dueTime) - new Date();
             if (diff < 0) return 'overdue';
-            if (diff < 30 * 60 * 1000) return 'upcoming';
+            if (diff < 1800000) return 'upcoming';
             return '';
         }
 
         function renderTodos() {
             const list = document.getElementById('todoList');
-            
-            const sortedTodos = [...todos].sort((a, b) => {
+            const sorted = [...todos].sort((a, b) => {
                 if (!a.dueTime) return 1;
                 if (!b.dueTime) return -1;
                 return new Date(a.dueTime) - new Date(b.dueTime);
             });
-            
-            if (sortedTodos.length === 0) {
-                list.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！</li>';
+
+            const pending = todos.filter(t => !t.completed).length;
+            document.getElementById('todoCount').textContent = pending + ' 项待完成';
+
+            if (sorted.length === 0) {
+                list.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！🎯</li>';
                 return;
             }
 
-            list.innerHTML = sortedTodos.map(todo => {
+            list.innerHTML = sorted.map(todo => {
                 const dueInfo = formatDueTime(todo.dueTime);
                 const statusClass = getTodoStatusClass(todo);
-                
-                return `
-                    <li class="todo-item ${statusClass} ${todo.completed ? 'completed' : ''}">
-                        <div class="todo-item-row">
-                            <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
-                            <div class="todo-content">
-                                <span class="todo-text">${escapeHtml(todo.text)}</span>
-                                ${todo.dueTime ? `
-                                    <span class="todo-due-time ${dueInfo.status === 'overdue' ? 'overdue-text' : ''} ${dueInfo.status === 'upcoming' ? 'upcoming-text' : ''}">
-                                        📅 ${dueInfo.text}
-                                    </span>
-                                ` : ''}
-                            </div>
-                            <button class="btn-delete" onclick="deleteTodo(${todo.id})" title="删除">×</button>
-                        </div>
-                    </li>
-                `;
+                return '<li class="todo-item ' + statusClass + ' ' + (todo.completed ? 'completed' : '') + '">' +
+                    '<div class="todo-item-row">' +
+                    '<input type="checkbox" class="todo-checkbox" ' + (todo.completed ? 'checked' : '') + ' onchange="toggleTodo(' + todo.id + ')">' +
+                    '<div class="todo-content">' +
+                    '<span class="todo-text">' + escapeHtml(todo.text) + '</span>' +
+                    (todo.dueTime ? '<div class="todo-due-time ' + (dueInfo.status === 'overdue' ? 'overdue-text' : '') + (dueInfo.status === 'upcoming' ? 'upcoming-text' : '') + '">📅 ' + dueInfo.text + '</div>' : '') +
+                    '</div>' +
+                    '<button class="btn-delete" onclick="deleteTodo(' + todo.id + ')">×</button>' +
+                    '</div></li>';
             }).join('');
-        }
-
-        function startDueTimeChecker() {
-            setInterval(() => {
-                renderTodos();
-            }, 60000);
         }
 
         function escapeHtml(text) {
@@ -829,35 +1037,41 @@
 
         function playAlarm() {
             try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                gainNode.gain.value = 0.3;
-                
-                oscillator.start();
-                setTimeout(() => oscillator.stop(), 500);
-            } catch (e) {
-                console.log('Audio not supported');
-            }
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                osc.type = 'sine';
+                gain.gain.value = 0.3;
+                osc.start();
+                setTimeout(() => osc.stop(), 500);
+            } catch(e) {}
         }
 
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function() {
+            updateBackground();
+            updateWeather();
+            loadMood();
+            showQuote();
             updateCountdownDisplay();
             updateStopwatchDisplay();
             updateCurrentTime();
             renderTodos();
             setDefaultDueTime();
-            startDueTimeChecker();
-            
-            // 每秒更新当前时间
+
+            // 每秒更新时钟
             setInterval(updateCurrentTime, 1000);
+            // 每分钟更新待办状态
+            setInterval(renderTodos, 60000);
+            // 每30分钟切换语录
+            setInterval(showQuote, 30 * 60 * 1000);
+            // 每5分钟更新背景
+            setInterval(updateBackground, 5 * 60 * 1000);
+            // 每30分钟更新天气
+            setInterval(updateWeather, 30 * 60 * 1000);
         });
     </script>
 </body>
