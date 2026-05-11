@@ -1,1078 +1,1221 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>番茄钟 - 智能待办</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            --primary: #ff6b6b;
-            --primary-dark: #ee5a24;
-            --bg-morning: linear-gradient(135deg, #f6d365 0%, #fda085 50%, #ff6b6b 100%);
-            --bg-afternoon: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #43e97b 100%);
-            --bg-evening: linear-gradient(135deg, #2c3e50 0%, #4a00e0 50%, #8e2de2 100%);
-            --bg-night: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            min-height: 100vh;
-            min-height: 100dvh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 0;
-            transition: background 2s ease;
-            overflow-x: hidden;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 430px;
-            min-height: 100vh;
-            min-height: 100dvh;
-            aspect-ratio: 9/16;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            overflow-x: hidden;
-            position: relative;
-            padding: 20px 16px;
-            padding-top: env(safe-area-inset-top, 20px);
-            padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
-
-        /* Header */
-        .app-header {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .app-header h1 {
-            color: white;
-            font-size: 22px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            font-weight: 700;
-        }
-
-        /* Weather Widget */
-        .weather-widget {
-            background: rgba(255,255,255,0.15);
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .weather-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .weather-icon {
-            font-size: 36px;
-            line-height: 1;
-        }
-
-        .weather-info {
-            color: white;
-        }
-
-        .weather-temp {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .weather-desc {
-            font-size: 12px;
-            opacity: 0.85;
-        }
-
-        .weather-right {
-            text-align: right;
-            color: white;
-            font-size: 11px;
-            opacity: 0.8;
-        }
-
-        /* Mood Selector */
-        .mood-section {
-            background: rgba(255,255,255,0.15);
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .mood-title {
-            color: white;
-            font-size: 13px;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-
-        .mood-options {
-            display: flex;
-            justify-content: space-around;
-            gap: 8px;
-        }
-
-        .mood-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1);
-            font-size: 22px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mood-btn:hover, .mood-btn.active {
-            transform: scale(1.2);
-            border-color: var(--primary);
-            background: rgba(255,107,107,0.3);
-            box-shadow: 0 0 15px rgba(255,107,107,0.4);
-        }
-
-        /* Quote Section */
-        .quote-section {
-            background: rgba(255,255,255,0.12);
-            border-radius: 16px;
-            padding: 14px 16px;
-            margin-bottom: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.15);
-            text-align: center;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .quote-text {
-            color: white;
-            font-size: 13px;
-            line-height: 1.6;
-            font-style: italic;
-            opacity: 0.95;
-        }
-
-        /* Timer Mode Tabs */
-        .mode-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        .mode-tab {
-            padding: 8px 16px;
-            font-size: 13px;
-            border: 1.5px solid rgba(255,255,255,0.4);
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-weight: 600;
-            backdrop-filter: blur(5px);
-        }
-
-        .mode-tab:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .mode-tab.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
-        }
-
-        /* Timer Section */
-        .timer-section {
-            background: rgba(255,255,255,0.13);
-            border-radius: 16px;
-            padding: 20px 16px;
-            margin-bottom: 12px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .timer-display {
-            font-size: 48px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 12px;
-            font-variant-numeric: tabular-nums;
-            text-shadow: 0 2px 15px rgba(0,0,0,0.3);
-            letter-spacing: 2px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 5px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), #ffd93d);
-            border-radius: 3px;
-            transition: width 1s linear;
-            width: 0%;
-        }
-
-        .timer-setter {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        .time-input-group {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .time-input-group label {
-            font-size: 12px;
-            color: rgba(255,255,255,0.8);
-        }
-
-        .time-input {
-            width: 48px;
-            padding: 6px;
-            font-size: 14px;
-            border: 1.5px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            outline: none;
-            text-align: center;
-            background: rgba(255,255,255,0.15);
-            color: white;
-            transition: border-color 0.3s;
-        }
-
-        .time-input:focus {
-            border-color: var(--primary);
-            background: rgba(255,255,255,0.25);
-        }
-
-        .timer-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 22px;
-            font-size: 14px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            touch-action: manipulation;
-        }
-
-        .btn-start {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
-        }
-
-        .btn-start:hover { transform: translateY(-2px); }
-
-        .btn-pause {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            color: white;
-        }
-
-        .btn-pause:hover { transform: translateY(-2px); }
-
-        .btn-reset {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1.5px solid rgba(255,255,255,0.3);
-        }
-
-        .btn-reset:hover { background: rgba(255,255,255,0.3); }
-
-        .btn-set {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 6px 14px;
-            font-size: 12px;
-        }
-
-        /* No Timer / Clock Section */
-        .clock-display {
-            font-size: 44px;
-            font-weight: 700;
-            color: white;
-            text-shadow: 0 2px 15px rgba(0,0,0,0.3);
-            margin-bottom: 6px;
-        }
-
-        .clock-date {
-            font-size: 14px;
-            color: rgba(255,255,255,0.8);
-        }
-
-        /* Todo Section */
-        .todo-section {
-            background: rgba(255,255,255,0.92);
-            border-radius: 16px;
-            padding: 16px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 200px;
-        }
-
-        .todo-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .todo-header h2 {
-            color: #333;
-            font-size: 16px;
-        }
-
-        .todo-count {
-            font-size: 11px;
-            color: #999;
-            background: #f0f0f0;
-            padding: 3px 8px;
-            border-radius: 10px;
-        }
-
-        .todo-form {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 12px;
-        }
-
-        .todo-form-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .todo-input {
-            flex: 1;
-            padding: 10px 14px;
-            font-size: 14px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 20px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .todo-input:focus { border-color: var(--primary); }
-
-        .todo-datetime {
-            padding: 8px 10px;
-            font-size: 12px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 12px;
-            outline: none;
-            background: white;
-            flex: 1;
-        }
-
-        .todo-datetime:focus { border-color: var(--primary); }
-
-        .btn-add {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 8px 16px;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-
-        .todo-list {
-            list-style: none;
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .todo-item {
-            padding: 10px 12px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            margin-bottom: 6px;
-            border-left: 4px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .todo-item.completed {
-            opacity: 0.5;
-            border-left-color: #4caf50 !important;
-        }
-
-        .todo-item.completed .todo-text {
-            text-decoration: line-through;
-            color: #999;
-        }
-
-        .todo-item.overdue { border-left-color: #f5576c; }
-        .todo-item.upcoming { border-left-color: #ff9800; }
-
-        .todo-item-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .todo-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--primary);
-            flex-shrink: 0;
-        }
-
-        .todo-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .todo-text {
-            font-size: 13px;
-            color: #333;
-            word-break: break-word;
-            line-height: 1.4;
-        }
-
-        .todo-due-time {
-            font-size: 11px;
-            color: #888;
-            margin-top: 2px;
-        }
-
-        .todo-due-time.overdue-text { color: #f5576c; font-weight: 600; }
-        .todo-due-time.upcoming-text { color: #ff9800; }
-
-        .btn-delete {
-            background: none;
-            border: none;
-            color: #f5576c;
-            font-size: 18px;
-            cursor: pointer;
-            opacity: 0.6;
-            padding: 4px 6px;
-            flex-shrink: 0;
-        }
-
-        .btn-delete:hover { opacity: 1; }
-
-        .empty-message {
-            text-align: center;
-            color: #aaa;
-            padding: 30px;
-            font-size: 13px;
-        }
-
-        /* Timer complete animation */
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-        }
-
-        .timer-complete {
-            animation: pulse 1s ease-in-out infinite;
-            color: #ffd93d !important;
-        }
-
-        /* Scrollbar */
-        .todo-list::-webkit-scrollbar { width: 4px; }
-        .todo-list::-webkit-scrollbar-track { background: transparent; }
-        .todo-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
-
-        .app-container::-webkit-scrollbar { width: 0; display: none; }
-
-        /* Responsive fine-tuning */
-        @media (max-width: 380px) {
-            .timer-display { font-size: 38px; }
-            .clock-display { font-size: 36px; }
-            .weather-icon { font-size: 28px; }
-            .mood-btn { width: 38px; height: 38px; font-size: 18px; }
-        }
-
-        @media (min-height: 800px) {
-            .app-container { padding: 24px 18px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>番茄专注 - Pomodoro Focus</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #FF6347;
+  --primary-light: #FF8A75;
+  --primary-dark: #E5533A;
+  --secondary: #FFE4E1;
+  --accent: #2C3E50;
+  --bg-light: #FFF9F8;
+  --card-bg: #FFFFFF;
+  --text-primary: #2C3E50;
+  --text-secondary: #7F8C8D;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --radius: 16px;
+  --nav-height: 64px;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg-light);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-container {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+  transition: background 2s ease;
+}
+
+/* Dynamic background */
+.bg-morning { background: linear-gradient(180deg, #FFF5F0 0%, #FFE8E0 100%); }
+.bg-afternoon { background: linear-gradient(180deg, #FFF9F8 0%, #FFE4E1 100%); }
+.bg-evening { background: linear-gradient(180deg, #F8F0FF 0%, #FFE4F0 100%); }
+.bg-night { background: linear-gradient(180deg, #2C3E50 0%, #34495E 100%); }
+.bg-night { --text-primary: #ECF0F1; --text-secondary: #BDC3C7; --card-bg: rgba(255,255,255,0.08); }
+
+/* Header */
+.header {
+  padding: 12px 20px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-date {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.weather-widget {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.weather-icon { font-size: 18px; }
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: var(--nav-height);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Views */
+.view {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  padding: 0 20px 20px;
+  min-height: calc(100vh - var(--nav-height) - 50px);
+}
+.view.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Timer View */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+}
+
+.timer-modes {
+  display: flex;
+  background: var(--secondary);
+  border-radius: 25px;
+  padding: 4px;
+  margin-bottom: 28px;
+  gap: 2px;
+}
+.timer-mode-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 22px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.timer-mode-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 12px rgba(255,99,71,0.3);
+}
+
+/* Circular Timer */
+.timer-circle-wrapper {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 10px 0 24px;
+}
+.timer-svg {
+  width: 220px;
+  height: 220px;
+  transform: rotate(-90deg);
+}
+.timer-bg-circle {
+  fill: none;
+  stroke: var(--secondary);
+  stroke-width: 8;
+}
+.timer-progress-circle {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+  will-change: stroke-dashoffset;
+}
+.timer-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.timer-time {
+  font-family: 'Nunito', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+}
+.timer-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Timer duration selector */
+.duration-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.duration-btn {
+  padding: 6px 14px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+.duration-btn.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--secondary);
+}
+.custom-duration-input {
+  width: 80px;
+  padding: 6px 10px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 20px;
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  font-family: 'Nunito', sans-serif;
+}
+.custom-duration-input:focus { border-color: var(--primary); }
+
+/* Controls */
+.timer-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.control-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.2s ease;
+  will-change: transform;
+}
+.control-btn:active { transform: scale(0.92); }
+.control-btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 16px rgba(255,99,71,0.35);
+}
+.control-btn-primary:hover { background: var(--primary-dark); }
+.control-btn-secondary {
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow);
+}
+
+/* Quote */
+.quote-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  margin: 0 0 20px;
+  width: 100%;
+}
+.quote-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+.quote-author {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+/* Todo View */
+.todo-section { padding-top: 10px; }
+.todo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.todo-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+.todo-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--secondary);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.todo-add-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.todo-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1.5px solid var(--secondary);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: 'Noto Sans SC', sans-serif;
+  outline: none;
+  background: var(--card-bg);
+  transition: border-color 0.2s;
+}
+.todo-input:focus { border-color: var(--primary); }
+.todo-time-input {
+  width: 90px;
+  padding: 12px 10px;
+  border: 1.5px solid var(--secondary);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: 'Nunito', sans-serif;
+  outline: none;
+  background: var(--card-bg);
+  text-align: center;
+}
+.todo-time-input:focus { border-color: var(--primary); }
+.todo-add-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 12px rgba(255,99,71,0.3);
+  transition: transform 0.2s;
+}
+.todo-add-btn:active { transform: scale(0.9); }
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  animation: slideIn 0.3s ease forwards;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+.todo-item.completed {
+  opacity: 0.6;
+}
+.todo-item.completed .todo-item-text {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+@keyframes slideIn {
+  to { opacity: 1; transform: translateX(0); }
+}
+.todo-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.todo-checkbox.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.todo-checkbox.checked::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+.todo-item-content { flex: 1; min-width: 0; }
+.todo-item-text {
+  font-size: 14px;
+  font-weight: 400;
+  transition: all 0.3s ease;
+  word-break: break-word;
+}
+.todo-item-due {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  font-family: 'Nunito', sans-serif;
+}
+.todo-item-due.overdue { color: var(--primary); font-weight: 600; }
+.todo-item-due.upcoming { color: #27AE60; }
+.todo-delete-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.todo-delete-btn:hover { background: var(--secondary); color: var(--primary); }
+
+/* Mood View */
+.mood-section { padding-top: 10px; }
+.mood-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.mood-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.mood-selector {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 32px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px 12px;
+  box-shadow: var(--shadow);
+}
+.mood-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  min-width: 44px;
+  min-height: 44px;
+}
+.mood-option:hover { background: var(--secondary); }
+.mood-option.selected { background: var(--secondary); transform: scale(1.1); }
+.mood-emoji { font-size: 32px; }
+.mood-label { font-size: 11px; color: var(--text-secondary); }
+
+.mood-history-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.mood-history {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.mood-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.mood-day-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.mood-day-emoji { font-size: 20px; }
+
+/* About View */
+.about-section {
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.about-logo {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(255,99,71,0.25);
+}
+.about-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.about-version {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.about-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 280px;
+  margin-bottom: 32px;
+}
+.about-features {
+  width: 100%;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+.about-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--secondary);
+}
+.about-feature-item:last-child { border-bottom: none; }
+.about-feature-icon { font-size: 20px; }
+.about-feature-text { font-size: 13px; color: var(--text-secondary); }
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: var(--nav-height);
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 -2px 20px rgba(0,0,0,0.06);
+  z-index: 100;
+  border-radius: 20px 20px 0 0;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+}
+.nav-item.active .nav-icon { color: var(--primary); }
+.nav-item.active .nav-label { color: var(--primary); font-weight: 600; }
+.nav-icon {
+  font-size: 22px;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+.nav-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+/* Scrollbar */
+.main-content::-webkit-scrollbar { width: 0; }
+
+/* Responsive tweaks */
+@media (max-height: 700px) {
+  .timer-circle-wrapper { width: 180px; height: 180px; }
+  .timer-svg { width: 180px; height: 180px; }
+  .timer-time { font-size: 34px; }
+}
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <div class="app-header">
-            <h1>🍅 番茄钟智能待办</h1>
-        </div>
+<div class="app-container" id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-date" id="headerDate"></div>
+    <div class="weather-widget" id="weatherWidget">
+      <span class="weather-icon">☀️</span>
+      <span id="weatherTemp">--°C</span>
+    </div>
+  </div>
 
-        <!-- Weather Widget -->
-        <div class="weather-widget" id="weatherWidget">
-            <div class="weather-left">
-                <span class="weather-icon" id="weatherIcon">☀️</span>
-                <div class="weather-info">
-                    <div class="weather-temp" id="weatherTemp">26°C</div>
-                    <div class="weather-desc" id="weatherDesc">晴天</div>
-                </div>
-            </div>
-            <div class="weather-right">
-                <div id="weatherCity">定位中...</div>
-                <div id="weatherExtra">湿度: 65%</div>
-            </div>
-        </div>
-
-        <!-- Mood Selector -->
-        <div class="mood-section">
-            <div class="mood-title">今日心情</div>
-            <div class="mood-options">
-                <button class="mood-btn" data-mood="happy" onclick="selectMood('happy')">😊</button>
-                <button class="mood-btn" data-mood="excited" onclick="selectMood('excited')">🤩</button>
-                <button class="mood-btn" data-mood="neutral" onclick="selectMood('neutral')">😐</button>
-                <button class="mood-btn" data-mood="tired" onclick="selectMood('tired')">😴</button>
-                <button class="mood-btn" data-mood="sad" onclick="selectMood('sad')">😢</button>
-            </div>
-        </div>
-
-        <!-- Motivational Quote -->
-        <div class="quote-section">
-            <div class="quote-text" id="quoteText">加载中...</div>
-        </div>
-
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Timer View -->
+    <div class="view active" id="viewTimer">
+      <div class="timer-section">
         <!-- Timer Mode Tabs -->
-        <div class="mode-tabs">
-            <button class="mode-tab active" onclick="switchMode('countdown')" id="tab-countdown">⏱ 倒计时</button>
-            <button class="mode-tab" onclick="switchMode('stopwatch')" id="tab-stopwatch">⏳ 正计时</button>
-            <button class="mode-tab" onclick="switchMode('notimer')" id="tab-notimer">🕐 时钟</button>
+        <div class="timer-modes">
+          <button class="timer-mode-btn active" data-mode="countdown">倒计时</button>
+          <button class="timer-mode-btn" data-mode="stopwatch">正计时</button>
+          <button class="timer-mode-btn" data-mode="clock">时钟</button>
         </div>
 
-        <!-- Countdown Mode -->
-        <div class="timer-section" id="section-countdown">
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="timer-display" id="timerDisplay">00:00:00</div>
-            <div class="timer-setter">
-                <div class="time-input-group">
-                    <label>时</label>
-                    <input type="number" class="time-input" id="hoursInput" min="0" max="23" value="0">
-                </div>
-                <div class="time-input-group">
-                    <label>分</label>
-                    <input type="number" class="time-input" id="minutesInput" min="0" max="59" value="25">
-                </div>
-                <div class="time-input-group">
-                    <label>秒</label>
-                    <input type="number" class="time-input" id="secondsInput" min="0" max="59" value="0">
-                </div>
-                <button class="btn btn-set" onclick="setTimer()">设置</button>
-            </div>
-            <div class="timer-controls">
-                <button class="btn btn-start" id="btnStart" onclick="startCountdown()">开始</button>
-                <button class="btn btn-pause" id="btnPause" onclick="pauseTimer()" style="display:none;">暂停</button>
-                <button class="btn btn-reset" onclick="resetCountdown()">重置</button>
-            </div>
+        <!-- Duration Selector (for countdown) -->
+        <div class="duration-selector" id="durationSelector">
+          <button class="duration-btn active" data-minutes="25">25分</button>
+          <button class="duration-btn" data-minutes="45">45分</button>
+          <button class="duration-btn" data-minutes="60">60分</button>
+          <button class="duration-btn" data-minutes="90">90分</button>
+          <input type="number" class="custom-duration-input" id="customDuration" placeholder="自定义(分)" min="1" max="1440">
         </div>
 
-        <!-- Stopwatch Mode -->
-        <div class="timer-section" id="section-stopwatch" style="display:none;">
-            <div class="timer-display" id="stopwatchDisplay">00:00:00</div>
-            <div class="timer-controls">
-                <button class="btn btn-start" id="btnSwStart" onclick="startStopwatch()">开始</button>
-                <button class="btn btn-pause" id="btnSwPause" onclick="pauseStopwatch()" style="display:none;">暂停</button>
-                <button class="btn btn-reset" onclick="resetStopwatch()">重置</button>
-            </div>
+        <!-- Circular Timer -->
+        <div class="timer-circle-wrapper">
+          <svg class="timer-svg" viewBox="0 0 220 220">
+            <circle class="timer-bg-circle" cx="110" cy="110" r="100"/>
+            <circle class="timer-progress-circle" id="progressCircle" cx="110" cy="110" r="100"
+              stroke-dasharray="628.32" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-display">
+            <div class="timer-time" id="timerTime">25:00</div>
+            <div class="timer-label" id="timerLabel">专注时间</div>
+          </div>
         </div>
 
-        <!-- No Timer / Clock Mode -->
-        <div class="timer-section" id="section-notimer" style="display:none;">
-            <div class="clock-display" id="currentTime">00:00:00</div>
-            <div class="clock-date" id="currentDate">加载中...</div>
+        <!-- Controls -->
+        <div class="timer-controls">
+          <button class="control-btn control-btn-secondary" id="btnReset" title="重置">↺</button>
+          <button class="control-btn control-btn-primary" id="btnStartPause" title="开始">▶</button>
         </div>
 
-        <!-- Todo List -->
-        <div class="todo-section">
-            <div class="todo-header">
-                <h2>📝 待办事项</h2>
-                <span class="todo-count" id="todoCount">0 项</span>
-            </div>
-            <div class="todo-form">
-                <div class="todo-form-row">
-                    <input type="text" class="todo-input" id="todoInput" placeholder="添加新的待办事项...">
-                </div>
-                <div class="todo-form-row">
-                    <input type="datetime-local" class="todo-datetime" id="todoDueTime">
-                    <button class="btn btn-add" onclick="addTodo()">添加</button>
-                </div>
-            </div>
-            <ul class="todo-list" id="todoList"></ul>
+        <!-- Quote -->
+        <div class="quote-card">
+          <div class="quote-text" id="quoteText">专注当下，成就未来。</div>
+          <div class="quote-author" id="quoteAuthor">— 番茄专注</div>
         </div>
+      </div>
     </div>
 
+    <!-- Todo View -->
+    <div class="view" id="viewTodo">
+      <div class="todo-section">
+        <div class="todo-header">
+          <div class="todo-title">待办事项</div>
+          <div class="todo-count" id="todoCount">0 项</div>
+        </div>
+        <div class="todo-add-form">
+          <input type="text" class="todo-input" id="todoInput" placeholder="添加新任务...">
+          <input type="time" class="todo-time-input" id="todoTimeInput">
+          <button class="todo-add-btn" id="todoAddBtn">+</button>
+        </div>
+        <div class="todo-list" id="todoList"></div>
+      </div>
+    </div>
 
-    <script>
-        // ==================== 背景主题（根据时间变化） ====================
-        function updateBackground() {
-            const hour = new Date().getHours();
-            let bg;
-            if (hour >= 6 && hour < 12) {
-                bg = 'linear-gradient(135deg, #f6d365 0%, #fda085 50%, #ff6b6b 100%)';
-            } else if (hour >= 12 && hour < 17) {
-                bg = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%)';
-            } else if (hour >= 17 && hour < 20) {
-                bg = 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 30%, #ee5a24 100%)';
-            } else {
-                bg = 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)';
-            }
-            document.body.style.background = bg;
-        }
+    <!-- Mood View -->
+    <div class="view" id="viewMood">
+      <div class="mood-section">
+        <div class="mood-title">今日心情</div>
+        <div class="mood-subtitle">记录每天的情绪变化</div>
+        <div class="mood-selector" id="moodSelector">
+          <div class="mood-option" data-mood="great"><span class="mood-emoji">😄</span><span class="mood-label">很棒</span></div>
+          <div class="mood-option" data-mood="good"><span class="mood-emoji">🙂</span><span class="mood-label">不错</span></div>
+          <div class="mood-option" data-mood="normal"><span class="mood-emoji">😐</span><span class="mood-label">一般</span></div>
+          <div class="mood-option" data-mood="bad"><span class="mood-emoji">😔</span><span class="mood-label">低落</span></div>
+          <div class="mood-option" data-mood="terrible"><span class="mood-emoji">😢</span><span class="mood-label">很差</span></div>
+        </div>
+        <div class="mood-history-title">本周心情</div>
+        <div class="mood-history" id="moodHistory"></div>
+      </div>
+    </div>
 
-        // ==================== 天气模块 ====================
-        function updateWeather() {
-            // 模拟天气数据（可替换为真实API）
-            const weatherData = [
-                { icon: '☀️', temp: '28°C', desc: '晴天', humidity: '45%', city: '北京' },
-                { icon: '⛅', temp: '24°C', desc: '多云', humidity: '60%', city: '上海' },
-                { icon: '🌤️', temp: '26°C', desc: '晴间多云', humidity: '55%', city: '深圳' },
-                { icon: '🌧️', temp: '18°C', desc: '小雨', humidity: '85%', city: '杭州' },
-                { icon: '⛈️', temp: '20°C', desc: '雷阵雨', humidity: '90%', city: '广州' },
-                { icon: '🌫️', temp: '15°C', desc: '雾', humidity: '95%', city: '成都' },
-                { icon: '❄️', temp: '-2°C', desc: '雪', humidity: '70%', city: '哈尔滨' },
-                { icon: '🌬️', temp: '22°C', desc: '大风', humidity: '40%', city: '大连' }
-            ];
+    <!-- About View -->
+    <div class="view" id="viewAbout">
+      <div class="about-section">
+        <div class="about-logo">🍅</div>
+        <div class="about-name">番茄专注</div>
+        <div class="about-version">v2.0.0</div>
+        <div class="about-desc">一款简洁优雅的专注计时工具，帮助你更好地管理时间，提升工作效率。</div>
+        <div class="about-features">
+          <div class="about-feature-item"><span class="about-feature-icon">⏱️</span><span class="about-feature-text">三种计时模式：倒计时 / 正计时 / 时钟</span></div>
+          <div class="about-feature-item"><span class="about-feature-icon">📝</span><span class="about-feature-text">待办事项管理，支持截止时间</span></div>
+          <div class="about-feature-item"><span class="about-feature-icon">😊</span><span class="about-feature-text">每日心情记录与回顾</span></div>
+          <div class="about-feature-item"><span class="about-feature-icon">🌤️</span><span class="about-feature-text">实时天气显示</span></div>
+          <div class="about-feature-item"><span class="about-feature-icon">💬</span><span class="about-feature-text">励志语录，每30分钟更新</span></div>
+          <div class="about-feature-item"><span class="about-feature-icon">🎨</span><span class="about-feature-text">根据时段动态变化背景</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            const hour = new Date().getHours();
-            let idx;
-            if (hour >= 6 && hour < 10) idx = 0;
-            else if (hour >= 10 && hour < 14) idx = 2;
-            else if (hour >= 14 && hour < 17) idx = 1;
-            else if (hour >= 17 && hour < 20) idx = 3;
-            else idx = 5;
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="nav-item active" data-view="viewTimer">
+      <span class="nav-icon">⏱️</span>
+      <span class="nav-label">专注</span>
+    </div>
+    <div class="nav-item" data-view="viewTodo">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">待办</span>
+    </div>
+    <div class="nav-item" data-view="viewMood">
+      <span class="nav-icon">😊</span>
+      <span class="nav-label">心情</span>
+    </div>
+    <div class="nav-item" data-view="viewAbout">
+      <span class="nav-icon">ℹ️</span>
+      <span class="nav-label">关于</span>
+    </div>
+  </div>
+</div>
+<script>
+// ========== QUOTES ==========
+const quotes = [
+  {text: '专注当下，成就未来。', author: '番茄专注'},
+  {text: '千里之行，始于足下。', author: '老子'},
+  {text: '业精于勤，荒于嬉。', author: '韩愈'},
+  {text: '不积跬步，无以至千里。', author: '荀子'},
+  {text: '天行健，君子以自强不息。', author: '周易'},
+  {text: '学而不思则罔，思而不学则殆。', author: '孔子'},
+  {text: '锲而不舍，金石可镂。', author: '荀子'},
+  {text: '书山有路勤为径，学海无涯苦作舟。', author: '韩愈'},
+  {text: '宝剑锋从磨砺出，梅花香自苦寒来。', author: '古训'},
+  {text: '世上无难事，只怕有心人。', author: '谚语'},
+  {text: '有志者事竟成。', author: '后汉书'},
+  {text: '志当存高远。', author: '诸葛亮'},
+  {text: '一寸光阴一寸金，寸金难买寸光阴。', author: '谚语'},
+  {text: '少壮不努力，老大徒伤悲。', author: '长歌行'},
+  {text: '黑发不知勤学早，白首方悔读书迟。', author: '颜真卿'},
+  {text: '路漫漫其修远兮，吾将上下而求索。', author: '屈原'},
+  {text: '不经一番寒彻骨，怎得梅花扑鼻香。', author: '黄檗禅师'},
+  {text: '星星之火，可以燎原。', author: '尚书'},
+  {text: '长风破浪会有时，直挂云帆济沧海。', author: '李白'},
+  {text: '穷且益坚，不坠青云之志。', author: '王勃'},
+  {text: '海纳百川，有容乃大。', author: '林则徐'},
+  {text: '博观而约取，厚积而薄发。', author: '苏轼'},
+  {text: '纸上得来终觉浅，绝知此事要躬行。', author: '陆游'},
+  {text: '人生在勤，不索何获。', author: '张衡'},
+  {text: '莫等闲，白了少年头，空悲切。', author: '岳飞'},
+  {text: '天将降大任于斯人也，必先苦其心志。', author: '孟子'},
+  {text: '功崇惟志，业广惟勤。', author: '尚书'},
+  {text: '行动是治愈恐惧的良药。', author: '戴尔·卡耐基'},
+  {text: '成功不是终点，失败不是末日，勇气才是关键。', author: '丘吉尔'},
+  {text: '每一个不曾起舞的日子，都是对生命的辜负。', author: '尼采'}
+];
 
-            const w = weatherData[idx];
-            document.getElementById('weatherIcon').textContent = w.icon;
-            document.getElementById('weatherTemp').textContent = w.temp;
-            document.getElementById('weatherDesc').textContent = w.desc;
-            document.getElementById('weatherCity').textContent = w.city;
-            document.getElementById('weatherExtra').textContent = '湿度: ' + w.humidity;
+// ========== STATE ==========
+let timerMode = 'countdown'; // countdown, stopwatch, clock
+let timerState = 'stopped'; // stopped, running, paused
+let timerDuration = 25 * 60; // seconds
+let timerRemaining = 25 * 60;
+let stopwatchElapsed = 0;
+let timerInterval = null;
+let currentQuoteIndex = 0;
+let todos = JSON.parse(localStorage.getItem('pomodoro_todos') || '[]');
+let moodData = JSON.parse(localStorage.getItem('pomodoro_moods') || '{}');
 
-            // 尝试调用真实天气API
-            tryFetchRealWeather();
-        }
+// ========== DOM ELEMENTS ==========
+const progressCircle = document.getElementById('progressCircle');
+const timerTimeEl = document.getElementById('timerTime');
+const timerLabelEl = document.getElementById('timerLabel');
+const btnStartPause = document.getElementById('btnStartPause');
+const btnReset = document.getElementById('btnReset');
+const durationSelector = document.getElementById('durationSelector');
+const customDurationInput = document.getElementById('customDuration');
 
-        function tryFetchRealWeather() {
-            if (!navigator.geolocation) return;
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data && data.current_weather) {
-                            const cw = data.current_weather;
-                            document.getElementById('weatherTemp').textContent = Math.round(cw.temperature) + '°C';
-                            const code = cw.weathercode;
-                            let icon = '☀️', desc = '晴天';
-                            if (code <= 1) { icon = '☀️'; desc = '晴天'; }
-                            else if (code <= 3) { icon = '⛅'; desc = '多云'; }
-                            else if (code <= 48) { icon = '🌫️'; desc = '雾/霾'; }
-                            else if (code <= 57) { icon = '🌦️'; desc = '毛毛雨'; }
-                            else if (code <= 67) { icon = '🌧️'; desc = '下雨'; }
-                            else if (code <= 77) { icon = '❄️'; desc = '下雪'; }
-                            else if (code <= 82) { icon = '🌧️'; desc = '阵雨'; }
-                            else if (code <= 86) { icon = '🌨️'; desc = '阵雪'; }
-                            else { icon = '⛈️'; desc = '雷暴'; }
-                            document.getElementById('weatherIcon').textContent = icon;
-                            document.getElementById('weatherDesc').textContent = desc;
-                            document.getElementById('weatherCity').textContent = '当前位置';
-                            document.getElementById('weatherExtra').textContent = '风速: ' + cw.windspeed + 'km/h';
-                        }
-                    }).catch(function(){});
-            }, function(){}, { timeout: 5000 });
-        }
+// ========== NAVIGATION ==========
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const viewId = item.dataset.view;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => {
+      v.classList.remove('active');
+      v.style.display = 'none';
+    });
+    const target = document.getElementById(viewId);
+    target.style.display = 'block';
+    requestAnimationFrame(() => target.classList.add('active'));
+  });
+});
 
-        // ==================== 心情模块 ====================
-        let currentMood = localStorage.getItem('pomodoroMood_' + new Date().toDateString()) || '';
+// ========== TIMER MODES ==========
+document.querySelectorAll('.timer-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    switchTimerMode(btn.dataset.mode);
+  });
+});
 
-        function selectMood(mood) {
-            currentMood = mood;
-            localStorage.setItem('pomodoroMood_' + new Date().toDateString(), mood);
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mood === mood);
-            });
-        }
+function switchTimerMode(mode) {
+  stopTimer();
+  timerMode = mode;
+  timerState = 'stopped';
+  btnStartPause.textContent = '▶';
 
-        function loadMood() {
-            if (currentMood) {
-                document.querySelectorAll('.mood-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.mood === currentMood);
-                });
-            }
-        }
+  if (mode === 'countdown') {
+    durationSelector.style.display = 'flex';
+    timerRemaining = timerDuration;
+    updateTimerDisplay(timerRemaining);
+    updateProgress(1);
+    timerLabelEl.textContent = '专注时间';
+  } else if (mode === 'stopwatch') {
+    durationSelector.style.display = 'none';
+    stopwatchElapsed = 0;
+    updateTimerDisplay(0);
+    updateProgress(0);
+    timerLabelEl.textContent = '正向计时';
+  } else if (mode === 'clock') {
+    durationSelector.style.display = 'none';
+    timerLabelEl.textContent = '当前时间';
+    updateClockDisplay();
+    btnStartPause.style.display = 'none';
+    btnReset.style.display = 'none';
+    startClock();
+    return;
+  }
+  btnStartPause.style.display = 'flex';
+  btnReset.style.display = 'flex';
+}
 
-        // ==================== 励志语录模块 ====================
-        const quotes = [
-            '千里之行，始于足下。——老子',
-            '天行健，君子以自强不息。——《周易》',
-            '路漫漫其修远兮，吾将上下而求索。——屈原',
-            '宝剑锋从磨砺出，梅花香自苦寒来。',
-            '不积跬步，无以至千里；不积小流，无以成江海。——荀子',
-            '业精于勤，荒于嬉；行成于思，毁于随。——韩愈',
-            '志不强者智不达。——墨翟',
-            '锲而舍之，朽木不折；锲而不舍，金石可镂。——荀子',
-            '学而不思则罔，思而不学则殆。——孔子',
-            '知之者不如好之者，好之者不如乐之者。——孔子',
-            '三军可夺帅也，匹夫不可夺志也。——孔子',
-            '天将降大任于斯人也，必先苦其心志。——孟子',
-            '生于忧患，死于安乐。——孟子',
-            '穷则独善其身，达则兼济天下。——孟子',
-            '非淡泊无以明志，非宁静无以致远。——诸葛亮',
-            '读书破万卷，下笔如有神。——杜甫',
-            '山重水复疑无路，柳暗花明又一村。——陆游',
-            '长风破浪会有时，直挂云帆济沧海。——李白',
-            '不畏浮云遮望眼，自缘身在最高层。——王安石',
-            '欲穷千里目，更上一层楼。——王之涣',
-            '世上无难事，只要肯登攀。——毛泽东',
-            '星星之火，可以燎原。——毛泽东',
-            '书山有路勤为径，学海无涯苦作舟。——韩愈',
-            '少壮不努力，老大徒伤悲。——《长歌行》',
-            '黑发不知勤学早，白首方悔读书迟。——颜真卿'
-        ];
+// ========== DURATION SELECTOR ==========
+document.querySelectorAll('.duration-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    customDurationInput.value = '';
+    const mins = parseInt(btn.dataset.minutes);
+    timerDuration = mins * 60;
+    timerRemaining = timerDuration;
+    updateTimerDisplay(timerRemaining);
+    updateProgress(1);
+    if (timerState !== 'stopped') { stopTimer(); timerState = 'stopped'; btnStartPause.textContent = '▶'; }
+  });
+});
 
-        let currentQuoteIndex = 0;
+customDurationInput.addEventListener('change', () => {
+  const mins = parseInt(customDurationInput.value);
+  if (mins > 0 && mins <= 1440) {
+    document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+    timerDuration = mins * 60;
+    timerRemaining = timerDuration;
+    updateTimerDisplay(timerRemaining);
+    updateProgress(1);
+    if (timerState !== 'stopped') { stopTimer(); timerState = 'stopped'; btnStartPause.textContent = '▶'; }
+  }
+});
 
-        function showQuote() {
-            currentQuoteIndex = Math.floor(Math.random() * quotes.length);
-            document.getElementById('quoteText').textContent = '「' + quotes[currentQuoteIndex] + '」';
-        }
+// ========== TIMER CONTROLS ==========
+btnStartPause.addEventListener('click', () => {
+  if (timerMode === 'countdown') {
+    if (timerState === 'stopped' || timerState === 'paused') {
+      startCountdown();
+    } else {
+      pauseTimer();
+    }
+  } else if (timerMode === 'stopwatch') {
+    if (timerState === 'stopped' || timerState === 'paused') {
+      startStopwatch();
+    } else {
+      pauseTimer();
+    }
+  }
+});
 
-        // ==================== 模式切换 ====================
-        let currentMode = 'countdown';
+btnReset.addEventListener('click', () => {
+  stopTimer();
+  timerState = 'stopped';
+  btnStartPause.textContent = '▶';
+  if (timerMode === 'countdown') {
+    timerRemaining = timerDuration;
+    updateTimerDisplay(timerRemaining);
+    updateProgress(1);
+  } else if (timerMode === 'stopwatch') {
+    stopwatchElapsed = 0;
+    updateTimerDisplay(0);
+    updateProgress(0);
+  }
+});
 
-        function switchMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById('tab-' + mode).classList.add('active');
-            document.getElementById('section-countdown').style.display = mode === 'countdown' ? 'block' : 'none';
-            document.getElementById('section-stopwatch').style.display = mode === 'stopwatch' ? 'block' : 'none';
-            document.getElementById('section-notimer').style.display = mode === 'notimer' ? 'block' : 'none';
-        }
+function startCountdown() {
+  timerState = 'running';
+  btnStartPause.textContent = '⏸';
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    if (timerRemaining <= 0) {
+      timerRemaining = 0;
+      stopTimer();
+      timerState = 'stopped';
+      btnStartPause.textContent = '▶';
+      updateProgress(0);
+      updateTimerDisplay(0);
+      // Notification
+      if (Notification.permission === 'granted') {
+        new Notification('🍅 番茄专注', { body: '专注时间结束！休息一下吧~' });
+      }
+      return;
+    }
+    updateTimerDisplay(timerRemaining);
+    updateProgress(timerRemaining / timerDuration);
+  }, 1000);
+}
 
-        // ==================== 倒计时模块 ====================
-        let countdownInterval = null;
-        let timeLeft = 0;
-        let totalTime = 0;
-        let isCountdownRunning = false;
+function startStopwatch() {
+  timerState = 'running';
+  btnStartPause.textContent = '⏸';
+  timerInterval = setInterval(() => {
+    stopwatchElapsed++;
+    updateTimerDisplay(stopwatchElapsed);
+    // Progress completes a full circle every 60 minutes
+    const progress = (stopwatchElapsed % 3600) / 3600;
+    updateProgress(progress);
+  }, 1000);
+}
 
-        function formatTime(seconds) {
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            return hrs.toString().padStart(2, '0') + ':' + mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
-        }
+let clockInterval = null;
+function startClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(updateClockDisplay, 1000);
+}
 
-        function updateCountdownDisplay() {
-            document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
-        }
+function updateClockDisplay() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+  timerTimeEl.textContent = `${h}:${m}:${s}`;
+  // Progress based on seconds in a minute
+  const progress = now.getSeconds() / 60;
+  updateProgress(progress);
+}
 
-        function updateProgress() {
-            if (totalTime === 0) { document.getElementById('progressFill').style.width = '0%'; return; }
-            const progress = ((totalTime - timeLeft) / totalTime) * 100;
-            document.getElementById('progressFill').style.width = progress + '%';
-        }
+function pauseTimer() {
+  timerState = 'paused';
+  btnStartPause.textContent = '▶';
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
 
-        function setTimer() {
-            const h = parseInt(document.getElementById('hoursInput').value) || 0;
-            const m = parseInt(document.getElementById('minutesInput').value) || 0;
-            const s = parseInt(document.getElementById('secondsInput').value) || 0;
-            const total = Math.min(h * 3600 + m * 60 + s, 24 * 3600);
-            if (total > 0) {
-                timeLeft = total;
-                totalTime = total;
-                updateCountdownDisplay();
-                updateProgress();
-                document.getElementById('timerDisplay').classList.remove('timer-complete');
-            }
-        }
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  clearInterval(clockInterval);
+  clockInterval = null;
+}
 
-        function startCountdown() {
-            if (!isCountdownRunning && timeLeft > 0) {
-                isCountdownRunning = true;
-                document.getElementById('btnStart').style.display = 'none';
-                document.getElementById('btnPause').style.display = 'inline-block';
-                countdownInterval = setInterval(function() {
-                    if (timeLeft > 0) {
-                        timeLeft--;
-                        updateCountdownDisplay();
-                        updateProgress();
-                    } else {
-                        clearInterval(countdownInterval);
-                        isCountdownRunning = false;
-                        document.getElementById('btnStart').style.display = 'inline-block';
-                        document.getElementById('btnPause').style.display = 'none';
-                        document.getElementById('timerDisplay').classList.add('timer-complete');
-                        playAlarm();
-                        alert('⏰ 倒计时结束！');
-                    }
-                }, 1000);
-            }
-        }
+function updateTimerDisplay(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) {
+    timerTimeEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  } else {
+    timerTimeEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+}
 
-        function pauseTimer() {
-            clearInterval(countdownInterval);
-            isCountdownRunning = false;
-            document.getElementById('btnStart').style.display = 'inline-block';
-            document.getElementById('btnPause').style.display = 'none';
-        }
+function updateProgress(fraction) {
+  const circumference = 2 * Math.PI * 100; // 628.32
+  const offset = circumference * (1 - fraction);
+  progressCircle.style.strokeDashoffset = offset;
+}
 
-        function resetCountdown() {
-            clearInterval(countdownInterval);
-            isCountdownRunning = false;
-            timeLeft = 0; totalTime = 0;
-            updateCountdownDisplay();
-            updateProgress();
-            document.getElementById('btnStart').style.display = 'inline-block';
-            document.getElementById('btnPause').style.display = 'none';
-            document.getElementById('timerDisplay').classList.remove('timer-complete');
-        }
+// ========== WEATHER ==========
+function fetchWeather() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude, longitude } = pos.coords;
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.current_weather) {
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            document.getElementById('weatherTemp').textContent = `${temp}°C`;
+            document.querySelector('.weather-icon').textContent = getWeatherIcon(code);
+          }
+        }).catch(() => setMockWeather());
+    }, () => setMockWeather());
+  } else {
+    setMockWeather();
+  }
+}
 
-        // ==================== 正向计时模块 ====================
-        let stopwatchInterval = null;
-        let stopwatchTime = 0;
-        let isStopwatchRunning = false;
+function setMockWeather() {
+  document.getElementById('weatherTemp').textContent = '22°C';
+  document.querySelector('.weather-icon').textContent = '⛅';
+}
 
-        function updateStopwatchDisplay() {
-            document.getElementById('stopwatchDisplay').textContent = formatTime(stopwatchTime);
-        }
+function getWeatherIcon(code) {
+  if (code === 0) return '☀️';
+  if (code <= 3) return '⛅';
+  if (code <= 49) return '🌫️';
+  if (code <= 69) return '🌧️';
+  if (code <= 79) return '🌨️';
+  if (code <= 99) return '⛈️';
+  return '🌤️';
+}
 
-        function startStopwatch() {
-            if (!isStopwatchRunning) {
-                isStopwatchRunning = true;
-                document.getElementById('btnSwStart').style.display = 'none';
-                document.getElementById('btnSwPause').style.display = 'inline-block';
-                stopwatchInterval = setInterval(function() {
-                    stopwatchTime++;
-                    updateStopwatchDisplay();
-                }, 1000);
-            }
-        }
+// ========== DATE HEADER ==========
+function updateDate() {
+  const now = new Date();
+  const days = ['周日','周一','周二','周三','周四','周五','周六'];
+  const month = now.getMonth() + 1;
+  const date = now.getDate();
+  const day = days[now.getDay()];
+  document.getElementById('headerDate').textContent = `${month}月${date}日 ${day}`;
+}
 
-        function pauseStopwatch() {
-            clearInterval(stopwatchInterval);
-            isStopwatchRunning = false;
-            document.getElementById('btnSwStart').style.display = 'inline-block';
-            document.getElementById('btnSwPause').style.display = 'none';
-        }
+// ========== DYNAMIC BACKGROUND ==========
+function updateBackground() {
+  const hour = new Date().getHours();
+  const app = document.getElementById('app');
+  app.classList.remove('bg-morning','bg-afternoon','bg-evening','bg-night');
+  if (hour >= 6 && hour < 12) app.classList.add('bg-morning');
+  else if (hour >= 12 && hour < 18) app.classList.add('bg-afternoon');
+  else if (hour >= 18 && hour < 21) app.classList.add('bg-evening');
+  else app.classList.add('bg-night');
+}
 
-        function resetStopwatch() {
-            clearInterval(stopwatchInterval);
-            isStopwatchRunning = false;
-            stopwatchTime = 0;
-            updateStopwatchDisplay();
-            document.getElementById('btnSwStart').style.display = 'inline-block';
-            document.getElementById('btnSwPause').style.display = 'none';
-        }
+// ========== QUOTES ==========
+function updateQuote() {
+  const now = new Date();
+  const index = Math.floor((now.getHours() * 60 + now.getMinutes()) / 30) % quotes.length;
+  if (index !== currentQuoteIndex) {
+    currentQuoteIndex = index;
+    document.getElementById('quoteText').textContent = quotes[index].text;
+    document.getElementById('quoteAuthor').textContent = `— ${quotes[index].author}`;
+  }
+}
 
-        // ==================== 不计时模块（时钟） ====================
-        function updateCurrentTime() {
-            const now = new Date();
-            const h = now.getHours().toString().padStart(2, '0');
-            const m = now.getMinutes().toString().padStart(2, '0');
-            const s = now.getSeconds().toString().padStart(2, '0');
-            document.getElementById('currentTime').textContent = h + ':' + m + ':' + s;
+// ========== TODO ==========
+function renderTodos() {
+  const list = document.getElementById('todoList');
+  list.innerHTML = '';
+  const now = new Date();
+  const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
-            const year = now.getFullYear();
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const day = now.getDate().toString().padStart(2, '0');
-            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            document.getElementById('currentDate').textContent = year + '年' + month + '月' + day + '日 ' + weekdays[now.getDay()];
-        }
+  todos.forEach((todo, i) => {
+    const item = document.createElement('div');
+    item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+    item.style.animationDelay = `${i * 0.06}s`;
 
-        // ==================== 待办事项模块 ====================
-        let todos = JSON.parse(localStorage.getItem('pomodoroTodos')) || [];
+    let dueClass = '';
+    let dueText = '';
+    if (todo.dueTime) {
+      if (!todo.completed && todo.dueTime < nowTime) {
+        dueClass = 'overdue';
+        dueText = `⚠️ 已超时 (${todo.dueTime})`;
+      } else if (!todo.completed) {
+        dueClass = 'upcoming';
+        dueText = `📅 ${todo.dueTime}`;
+      } else {
+        dueText = `${todo.dueTime}`;
+      }
+    }
 
-        function setDefaultDueTime() {
-            const now = new Date();
-            now.setHours(now.getHours() + 1);
-            document.getElementById('todoDueTime').value = now.toISOString().slice(0, 16);
-        }
+    item.innerHTML = `
+      <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" data-index="${i}"></div>
+      <div class="todo-item-content">
+        <div class="todo-item-text">${escapeHtml(todo.text)}</div>
+        ${todo.dueTime ? `<div class="todo-item-due ${dueClass}">${dueText}</div>` : ''}
+      </div>
+      <button class="todo-delete-btn" data-index="${i}">✕</button>
+    `;
+    list.appendChild(item);
+  });
 
-        function addTodo() {
-            const input = document.getElementById('todoInput');
-            const dueInput = document.getElementById('todoDueTime');
-            const text = input.value.trim();
-            if (text) {
-                todos.push({
-                    id: Date.now(),
-                    text: text,
-                    dueTime: dueInput.value,
-                    completed: false,
-                    createdAt: new Date().toISOString()
-                });
-                saveTodos();
-                renderTodos();
-                input.value = '';
-                setDefaultDueTime();
-            }
-        }
+  document.getElementById('todoCount').textContent = `${todos.filter(t => !t.completed).length} 项`;
+}
 
-        document.getElementById('todoInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') addTodo();
-        });
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
-        function toggleTodo(id) {
-            todos = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
-            saveTodos();
-            renderTodos();
-        }
+document.getElementById('todoAddBtn').addEventListener('click', addTodo);
+document.getElementById('todoInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') addTodo();
+});
 
-        function deleteTodo(id) {
-            todos = todos.filter(t => t.id !== id);
-            saveTodos();
-            renderTodos();
-        }
+function addTodo() {
+  const input = document.getElementById('todoInput');
+  const timeInput = document.getElementById('todoTimeInput');
+  const text = input.value.trim();
+  if (!text) return;
+  todos.push({ text, dueTime: timeInput.value || '', completed: false });
+  saveTodos();
+  renderTodos();
+  input.value = '';
+  timeInput.value = '';
+}
 
-        function saveTodos() {
-            localStorage.setItem('pomodoroTodos', JSON.stringify(todos));
-        }
+document.getElementById('todoList').addEventListener('click', e => {
+  const checkbox = e.target.closest('.todo-checkbox');
+  const deleteBtn = e.target.closest('.todo-delete-btn');
+  if (checkbox) {
+    const idx = parseInt(checkbox.dataset.index);
+    todos[idx].completed = !todos[idx].completed;
+    saveTodos();
+    renderTodos();
+  } else if (deleteBtn) {
+    const idx = parseInt(deleteBtn.dataset.index);
+    todos.splice(idx, 1);
+    saveTodos();
+    renderTodos();
+  }
+});
 
-        function formatDueTime(dueTimeStr) {
-            if (!dueTimeStr) return { text: '无截止时间', status: 'normal' };
-            const due = new Date(dueTimeStr);
-            const now = new Date();
-            const diff = due - now;
-            if (diff < 0) return { text: '已过期 (' + formatDateTime(due) + ')', status: 'overdue' };
-            const hours = Math.floor(diff / 3600000);
-            const minutes = Math.floor((diff % 3600000) / 60000);
-            if (hours < 1 && minutes < 30) return { text: '即将到期: ' + minutes + '分钟后', status: 'upcoming' };
-            if (hours < 24) return { text: '剩余 ' + hours + '小时' + minutes + '分钟', status: 'normal' };
-            return { text: formatDateTime(due), status: 'normal' };
-        }
+function saveTodos() {
+  localStorage.setItem('pomodoro_todos', JSON.stringify(todos));
+}
 
-        function formatDateTime(d) {
-            return (d.getMonth()+1).toString().padStart(2,'0') + '-' + d.getDate().toString().padStart(2,'0') + ' ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
-        }
+// ========== MOOD ==========
+const moodEmojis = { great: '😄', good: '🙂', normal: '😐', bad: '😔', terrible: '😢' };
 
-        function getTodoStatusClass(todo) {
-            if (todo.completed) return 'completed';
-            if (!todo.dueTime) return '';
-            const diff = new Date(todo.dueTime) - new Date();
-            if (diff < 0) return 'overdue';
-            if (diff < 1800000) return 'upcoming';
-            return '';
-        }
+document.getElementById('moodSelector').addEventListener('click', e => {
+  const option = e.target.closest('.mood-option');
+  if (!option) return;
+  const mood = option.dataset.mood;
+  const today = new Date().toISOString().split('T')[0];
+  moodData[today] = mood;
+  localStorage.setItem('pomodoro_moods', JSON.stringify(moodData));
+  document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+  option.classList.add('selected');
+  renderMoodHistory();
+});
 
-        function renderTodos() {
-            const list = document.getElementById('todoList');
-            const sorted = [...todos].sort((a, b) => {
-                if (!a.dueTime) return 1;
-                if (!b.dueTime) return -1;
-                return new Date(a.dueTime) - new Date(b.dueTime);
-            });
+function renderMoodHistory() {
+  const container = document.getElementById('moodHistory');
+  container.innerHTML = '';
+  const dayLabels = ['日','一','二','三','四','五','六'];
+  const today = new Date();
 
-            const pending = todos.filter(t => !t.completed).length;
-            document.getElementById('todoCount').textContent = pending + ' 项待完成';
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    const mood = moodData[key];
+    const dayEl = document.createElement('div');
+    dayEl.className = 'mood-day';
+    dayEl.innerHTML = `
+      <span class="mood-day-label">${dayLabels[d.getDay()]}</span>
+      <span class="mood-day-emoji">${mood ? moodEmojis[mood] : '·'}</span>
+    `;
+    container.appendChild(dayEl);
+  }
 
-            if (sorted.length === 0) {
-                list.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！🎯</li>';
-                return;
-            }
+  // Highlight today's selected mood
+  const todayKey = today.toISOString().split('T')[0];
+  if (moodData[todayKey]) {
+    document.querySelectorAll('.mood-option').forEach(o => {
+      o.classList.toggle('selected', o.dataset.mood === moodData[todayKey]);
+    });
+  }
+}
 
-            list.innerHTML = sorted.map(todo => {
-                const dueInfo = formatDueTime(todo.dueTime);
-                const statusClass = getTodoStatusClass(todo);
-                return '<li class="todo-item ' + statusClass + ' ' + (todo.completed ? 'completed' : '') + '">' +
-                    '<div class="todo-item-row">' +
-                    '<input type="checkbox" class="todo-checkbox" ' + (todo.completed ? 'checked' : '') + ' onchange="toggleTodo(' + todo.id + ')">' +
-                    '<div class="todo-content">' +
-                    '<span class="todo-text">' + escapeHtml(todo.text) + '</span>' +
-                    (todo.dueTime ? '<div class="todo-due-time ' + (dueInfo.status === 'overdue' ? 'overdue-text' : '') + (dueInfo.status === 'upcoming' ? 'upcoming-text' : '') + '">📅 ' + dueInfo.text + '</div>' : '') +
-                    '</div>' +
-                    '<button class="btn-delete" onclick="deleteTodo(' + todo.id + ')">×</button>' +
-                    '</div></li>';
-            }).join('');
-        }
+// ========== NOTIFICATION PERMISSION ==========
+function requestNotification() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+// ========== INIT ==========
+function init() {
+  updateDate();
+  updateBackground();
+  updateQuote();
+  fetchWeather();
+  renderTodos();
+  renderMoodHistory();
+  requestNotification();
+  updateProgress(1);
 
-        function playAlarm() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = 800;
-                osc.type = 'sine';
-                gain.gain.value = 0.3;
-                osc.start();
-                setTimeout(() => osc.stop(), 500);
-            } catch(e) {}
-        }
+  // Update every minute
+  setInterval(() => {
+    updateDate();
+    updateBackground();
+    updateQuote();
+  }, 60000);
 
-        // ==================== 初始化 ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            updateBackground();
-            updateWeather();
-            loadMood();
-            showQuote();
-            updateCountdownDisplay();
-            updateStopwatchDisplay();
-            updateCurrentTime();
-            renderTodos();
-            setDefaultDueTime();
+  // Refresh weather every 30 min
+  setInterval(fetchWeather, 1800000);
+}
 
-            // 每秒更新时钟
-            setInterval(updateCurrentTime, 1000);
-            // 每分钟更新待办状态
-            setInterval(renderTodos, 60000);
-            // 每30分钟切换语录
-            setInterval(showQuote, 30 * 60 * 1000);
-            // 每5分钟更新背景
-            setInterval(updateBackground, 5 * 60 * 1000);
-            // 每30分钟更新天气
-            setInterval(updateWeather, 30 * 60 * 1000);
-        });
-    </script>
+init();
+</script>
 </body>
 </html>
