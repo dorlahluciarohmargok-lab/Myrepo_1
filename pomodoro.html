@@ -17,49 +17,119 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             padding: 20px;
+            padding-top: 30px;
         }
 
         .container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
         }
 
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 30px;
-            font-size: 28px;
+            margin-bottom: 25px;
+            font-size: 26px;
         }
 
-        /* 番茄钟计时器样式 */
+        /* 模式标签页 */
+        .mode-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .mode-tab {
+            padding: 10px 20px;
+            font-size: 14px;
+            border: 2px solid #ff6b6b;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        .mode-tab:hover {
+            background: #fff5f5;
+        }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* 计时器样式 */
         .timer-section {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
         }
 
         .timer-display {
-            font-size: 72px;
+            font-size: 56px;
             font-weight: bold;
             color: #ff6b6b;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-variant-numeric: tabular-nums;
+        }
+
+        .timer-setter {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .time-input-group label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .time-input {
+            width: 55px;
+            padding: 8px 8px;
+            font-size: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .time-input:focus {
+            border-color: #ff6b6b;
         }
 
         .timer-controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
+            margin-top: 12px;
         }
 
         .btn {
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 10px 24px;
+            font-size: 14px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
@@ -97,27 +167,47 @@
             transform: translateY(-2px);
         }
 
+        .btn-set {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-set:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
         /* 待办事项样式 */
         .todo-section h2 {
             color: #333;
-            margin-bottom: 20px;
-            font-size: 20px;
-            border-bottom: 2px solid #ff6b6b;
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .todo-input-group {
+        .todo-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .todo-form-row {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
         }
 
         .todo-input {
             flex: 1;
-            padding: 12px 18px;
-            font-size: 15px;
+            padding: 10px 15px;
+            font-size: 14px;
             border: 2px solid #e0e0e0;
-            border-radius: 25px;
+            border-radius: 20px;
             outline: none;
             transition: border-color 0.3s;
         }
@@ -126,10 +216,25 @@
             border-color: #ff6b6b;
         }
 
+        .todo-datetime {
+            padding: 10px 12px;
+            font-size: 13px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+            background: white;
+            min-width: 170px;
+        }
+
+        .todo-datetime:focus {
+            border-color: #ff6b6b;
+        }
+
         .btn-add {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
             color: white;
-            padding: 12px 25px;
+            padding: 10px 20px;
         }
 
         .btn-add:hover {
@@ -145,12 +250,13 @@
 
         .todo-item {
             display: flex;
-            align-items: center;
-            padding: 15px;
+            flex-direction: column;
+            padding: 12px;
             background: #f8f9fa;
             border-radius: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             transition: all 0.3s ease;
+            border-left: 4px solid transparent;
         }
 
         .todo-item:hover {
@@ -159,6 +265,7 @@
 
         .todo-item.completed {
             opacity: 0.6;
+            border-left-color: #4caf50 !important;
         }
 
         .todo-item.completed .todo-text {
@@ -166,18 +273,56 @@
             color: #999;
         }
 
+        .todo-item.overdue {
+            border-left-color: #f5576c;
+        }
+
+        .todo-item.upcoming {
+            border-left-color: #ff9800;
+        }
+
+        .todo-item-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .todo-checkbox {
-            width: 22px;
-            height: 22px;
-            margin-right: 15px;
+            width: 20px;
+            height: 20px;
             cursor: pointer;
             accent-color: #ff6b6b;
+            flex-shrink: 0;
+        }
+
+        .todo-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .todo-text {
-            flex: 1;
-            font-size: 15px;
+            font-size: 14px;
             color: #333;
+            word-break: break-word;
+        }
+
+        .todo-due-time {
+            font-size: 11px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .todo-due-time.overdue-text {
+            color: #f5576c;
+            font-weight: 600;
+        }
+
+        .todo-due-time.upcoming-text {
+            color: #ff9800;
         }
 
         .btn-delete {
@@ -188,7 +333,8 @@
             cursor: pointer;
             opacity: 0.7;
             transition: opacity 0.3s;
-            padding: 5px 10px;
+            padding: 5px 8px;
+            flex-shrink: 0;
         }
 
         .btn-delete:hover {
@@ -198,8 +344,8 @@
         .empty-message {
             text-align: center;
             color: #999;
-            padding: 30px;
-            font-size: 14px;
+            padding: 25px;
+            font-size: 13px;
         }
 
         /* 进度条 */
@@ -208,7 +354,7 @@
             height: 6px;
             background: #e0e0e0;
             border-radius: 3px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             overflow: hidden;
         }
 
@@ -217,11 +363,32 @@
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
             border-radius: 3px;
             transition: width 1s linear;
+            width: 0%;
+        }
+
+        /* 不计时模式样式 */
+        .no-timer-section {
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .no-timer-section .current-time {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .no-timer-section .current-date {
+            font-size: 16px;
+            color: #666;
         }
 
         /* 滚动条样式 */
         .todo-list::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
 
         .todo-list::-webkit-scrollbar-track {
@@ -248,142 +415,302 @@
             animation: pulse 1s ease-in-out infinite;
             color: #f5576c;
         }
+
+        /* 响应式 */
+        @media (max-width: 500px) {
+            .timer-display {
+                font-size: 42px;
+            }
+            
+            .todo-form-row {
+                flex-direction: column;
+            }
+            
+            .todo-datetime {
+                min-width: auto;
+                width: 100%;
+            }
+
+            .mode-tabs {
+                gap: 8px;
+            }
+
+            .mode-tab {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🍅 番茄钟待办软件</h1>
         
-        <!-- 番茄钟计时器 -->
-        <div class="timer-section">
+        <!-- 模式选择标签 -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" onclick="switchMode('countdown')" id="tab-countdown">⏱️ 倒计时</button>
+            <button class="mode-tab" onclick="switchMode('stopwatch')" id="tab-stopwatch">⏳ 正向计时</button>
+            <button class="mode-tab" onclick="switchMode('notimer')" id="tab-notimer">🕐 不计时</button>
+        </div>
+
+        <!-- 倒计时模式 -->
+        <div class="timer-section" id="section-countdown">
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div class="timer-display" id="timerDisplay">25:00</div>
-            <div class="timer-controls">
-                <button class="btn btn-start" id="btnStart" onclick="startTimer()">开始</button>
-                <button class="btn btn-pause" id="btnPause" onclick="pauseTimer()" style="display: none;">暂停</button>
-                <button class="btn btn-reset" onclick="resetTimer()">重置</button>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            
+            <div class="timer-setter">
+                <div class="time-input-group">
+                    <label>时</label>
+                    <input type="number" class="time-input" id="hoursInput" min="0" max="23" value="0">
+                </div>
+                <div class="time-input-group">
+                    <label>分</label>
+                    <input type="number" class="time-input" id="minutesInput" min="0" max="59" value="25">
+                </div>
+                <div class="time-input-group">
+                    <label>秒</label>
+                    <input type="number" class="time-input" id="secondsInput" min="0" max="59" value="0">
+                </div>
+                <button class="btn btn-set" onclick="setTimer()">设置</button>
             </div>
+            
+            <div class="timer-controls">
+                <button class="btn btn-start" id="btnStart" onclick="startCountdown()">开始</button>
+                <button class="btn btn-pause" id="btnPause" onclick="pauseTimer()" style="display: none;">暂停</button>
+                <button class="btn btn-reset" onclick="resetCountdown()">重置</button>
+            </div>
+        </div>
+
+        <!-- 正向计时模式 -->
+        <div class="timer-section" id="section-stopwatch" style="display: none;">
+            <div class="timer-display" id="stopwatchDisplay">00:00:00</div>
+            
+            <div class="timer-controls">
+                <button class="btn btn-start" id="btnStopwatchStart" onclick="startStopwatch()">开始</button>
+                <button class="btn btn-pause" id="btnStopwatchPause" onclick="pauseStopwatch()" style="display: none;">暂停</button>
+                <button class="btn btn-reset" onclick="resetStopwatch()">重置</button>
+            </div>
+        </div>
+
+        <!-- 不计时模式 -->
+        <div class="no-timer-section" id="section-notimer" style="display: none;">
+            <div class="current-time" id="currentTime">00:00:00</div>
+            <div class="current-date" id="currentDate">2024年01月01日 星期一</div>
         </div>
 
         <!-- 待办事项列表 -->
         <div class="todo-section">
             <h2>📝 待办事项</h2>
-            <div class="todo-input-group">
-                <input type="text" class="todo-input" id="todoInput" placeholder="添加新的待办事项..." onkeypress="handleKeyPress(event)">
-                <button class="btn btn-add" onclick="addTodo()">添加</button>
+            <div class="todo-form">
+                <div class="todo-form-row">
+                    <input type="text" class="todo-input" id="todoInput" placeholder="添加新的待办事项...">
+                </div>
+                <div class="todo-form-row">
+                    <input type="datetime-local" class="todo-datetime" id="todoDueTime">
+                    <button class="btn btn-add" onclick="addTodo()">添加</button>
+                </div>
             </div>
             <ul class="todo-list" id="todoList"></ul>
         </div>
     </div>
 
     <script>
-        // 番茄钟相关变量
-        let timerInterval = null;
-        let timeLeft = 25 * 60; // 25分钟，单位秒
-        const totalTime = 25 * 60;
-        let isRunning = false;
+        // ==================== 模式切换 ====================
+        let currentMode = 'countdown';
 
-        // 待办事项数据
-        let todos = JSON.parse(localStorage.getItem('pomodoroTodos')) || [];
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            updateTimerDisplay();
-            updateProgress();
-            renderTodos();
-        });
-
-        // 格式化时间显示
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // 更新标签页状态
+            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(`tab-${mode}`).classList.add('active');
+            
+            // 显示对应区域
+            document.getElementById('section-countdown').style.display = mode === 'countdown' ? 'block' : 'none';
+            document.getElementById('section-stopwatch').style.display = mode === 'stopwatch' ? 'block' : 'none';
+            document.getElementById('section-notimer').style.display = mode === 'notimer' ? 'block' : 'none';
         }
 
-        // 更新时间显示
-        function updateTimerDisplay() {
+        // ==================== 倒计时模块 ====================
+        let countdownInterval = null;
+        let timeLeft = 0;
+        let totalTime = 0;
+        let isCountdownRunning = false;
+
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateCountdownDisplay() {
             document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
         }
 
-        // 更新进度条
         function updateProgress() {
+            if (totalTime === 0) {
+                document.getElementById('progressFill').style.width = '0%';
+                return;
+            }
             const progress = ((totalTime - timeLeft) / totalTime) * 100;
             document.getElementById('progressFill').style.width = `${progress}%`;
         }
 
-        // 开始计时
-        function startTimer() {
-            if (!isRunning) {
-                isRunning = true;
+        function setTimer() {
+            const hours = parseInt(document.getElementById('hoursInput').value) || 0;
+            const minutes = parseInt(document.getElementById('minutesInput').value) || 0;
+            const seconds = parseInt(document.getElementById('secondsInput').value) || 0;
+            
+            const totalSeconds = Math.min(hours * 3600 + minutes * 60 + seconds, 24 * 3600);
+            
+            if (totalSeconds > 0) {
+                timeLeft = totalSeconds;
+                totalTime = totalSeconds;
+                updateCountdownDisplay();
+                updateProgress();
+                document.getElementById('timerDisplay').classList.remove('timer-complete');
+            }
+        }
+
+        function startCountdown() {
+            if (!isCountdownRunning && timeLeft > 0) {
+                isCountdownRunning = true;
                 document.getElementById('btnStart').style.display = 'none';
                 document.getElementById('btnPause').style.display = 'inline-block';
                 
-                timerInterval = setInterval(function() {
+                countdownInterval = setInterval(function() {
                     if (timeLeft > 0) {
                         timeLeft--;
-                        updateTimerDisplay();
+                        updateCountdownDisplay();
                         updateProgress();
                     } else {
-                        // 计时结束
-                        clearInterval(timerInterval);
-                        isRunning = false;
+                        clearInterval(countdownInterval);
+                        isCountdownRunning = false;
                         document.getElementById('btnStart').style.display = 'inline-block';
                         document.getElementById('btnPause').style.display = 'none';
                         document.getElementById('timerDisplay').classList.add('timer-complete');
-                        alert('🎉 番茄时间结束！休息一下吧！');
+                        playAlarm();
+                        alert('⏰ 倒计时结束！');
                     }
                 }, 1000);
             }
         }
 
-        // 暂停计时
         function pauseTimer() {
-            clearInterval(timerInterval);
-            isRunning = false;
+            clearInterval(countdownInterval);
+            isCountdownRunning = false;
             document.getElementById('btnStart').style.display = 'inline-block';
             document.getElementById('btnPause').style.display = 'none';
         }
 
-        // 重置计时
-        function resetTimer() {
-            clearInterval(timerInterval);
-            isRunning = false;
-            timeLeft = totalTime;
-            updateTimerDisplay();
+        function resetCountdown() {
+            clearInterval(countdownInterval);
+            isCountdownRunning = false;
+            timeLeft = 0;
+            totalTime = 0;
+            updateCountdownDisplay();
             updateProgress();
             document.getElementById('btnStart').style.display = 'inline-block';
             document.getElementById('btnPause').style.display = 'none';
             document.getElementById('timerDisplay').classList.remove('timer-complete');
         }
 
-        // 添加待办事项
+        // ==================== 正向计时模块 ====================
+        let stopwatchInterval = null;
+        let stopwatchTime = 0;
+        let isStopwatchRunning = false;
+
+        function updateStopwatchDisplay() {
+            document.getElementById('stopwatchDisplay').textContent = formatTime(stopwatchTime);
+        }
+
+        function startStopwatch() {
+            if (!isStopwatchRunning) {
+                isStopwatchRunning = true;
+                document.getElementById('btnStopwatchStart').style.display = 'none';
+                document.getElementById('btnStopwatchPause').style.display = 'inline-block';
+                
+                stopwatchInterval = setInterval(function() {
+                    stopwatchTime++;
+                    updateStopwatchDisplay();
+                }, 1000);
+            }
+        }
+
+        function pauseStopwatch() {
+            clearInterval(stopwatchInterval);
+            isStopwatchRunning = false;
+            document.getElementById('btnStopwatchStart').style.display = 'inline-block';
+            document.getElementById('btnStopwatchPause').style.display = 'none';
+        }
+
+        function resetStopwatch() {
+            clearInterval(stopwatchInterval);
+            isStopwatchRunning = false;
+            stopwatchTime = 0;
+            updateStopwatchDisplay();
+            document.getElementById('btnStopwatchStart').style.display = 'inline-block';
+            document.getElementById('btnStopwatchPause').style.display = 'none';
+        }
+
+        // ==================== 不计时模块 ====================
+        function updateCurrentTime() {
+            const now = new Date();
+            
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekday = weekdays[now.getDay()];
+            document.getElementById('currentDate').textContent = `${year}年${month}月${day}日 ${weekday}`;
+        }
+
+        // ==================== 待办事项模块 ====================
+        let todos = JSON.parse(localStorage.getItem('pomodoroTodos')) || [];
+
+        function setDefaultDueTime() {
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            const formatted = now.toISOString().slice(0, 16);
+            document.getElementById('todoDueTime').value = formatted;
+        }
+
         function addTodo() {
             const input = document.getElementById('todoInput');
+            const dueTimeInput = document.getElementById('todoDueTime');
             const text = input.value.trim();
+            const dueTime = dueTimeInput.value;
             
             if (text) {
                 const todo = {
                     id: Date.now(),
                     text: text,
-                    completed: false
+                    dueTime: dueTime,
+                    completed: false,
+                    createdAt: new Date().toISOString()
                 };
                 todos.push(todo);
                 saveTodos();
                 renderTodos();
                 input.value = '';
+                setDefaultDueTime();
             }
         }
 
-        // 按回车添加
-        function handleKeyPress(event) {
+        document.getElementById('todoInput').addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 addTodo();
             }
-        }
+        });
 
-        // 切换完成状态
         function toggleTodo(id) {
             todos = todos.map(todo => {
                 if (todo.id === id) {
@@ -395,42 +722,143 @@
             renderTodos();
         }
 
-        // 删除待办事项
         function deleteTodo(id) {
             todos = todos.filter(todo => todo.id !== id);
             saveTodos();
             renderTodos();
         }
 
-        // 保存到本地存储
         function saveTodos() {
             localStorage.setItem('pomodoroTodos', JSON.stringify(todos));
         }
 
-        // 渲染待办列表
+        function formatDueTime(dueTimeStr) {
+            if (!dueTimeStr) return { text: '无截止时间', status: 'normal' };
+            
+            const dueDate = new Date(dueTimeStr);
+            const now = new Date();
+            const diff = dueDate - now;
+            
+            if (diff < 0) {
+                return { text: `已过期 (${formatDateTime(dueDate)})`, status: 'overdue' };
+            }
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (hours < 1 && minutes < 30) {
+                return { text: `即将到期: ${minutes}分钟后`, status: 'upcoming' };
+            }
+            
+            if (hours < 24) {
+                return { text: `剩余 ${hours}小时${minutes}分钟`, status: 'normal' };
+            }
+            
+            return { text: formatDateTime(dueDate), status: 'normal' };
+        }
+
+        function formatDateTime(date) {
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${month}-${day} ${hours}:${minutes}`;
+        }
+
+        function getTodoStatusClass(todo) {
+            if (todo.completed) return 'completed';
+            if (!todo.dueTime) return '';
+            
+            const dueDate = new Date(todo.dueTime);
+            const now = new Date();
+            const diff = dueDate - now;
+            
+            if (diff < 0) return 'overdue';
+            if (diff < 30 * 60 * 1000) return 'upcoming';
+            return '';
+        }
+
         function renderTodos() {
             const list = document.getElementById('todoList');
             
-            if (todos.length === 0) {
+            const sortedTodos = [...todos].sort((a, b) => {
+                if (!a.dueTime) return 1;
+                if (!b.dueTime) return -1;
+                return new Date(a.dueTime) - new Date(b.dueTime);
+            });
+            
+            if (sortedTodos.length === 0) {
                 list.innerHTML = '<li class="empty-message">暂无待办事项，添加一个吧！</li>';
                 return;
             }
 
-            list.innerHTML = todos.map(todo => `
-                <li class="todo-item ${todo.completed ? 'completed' : ''}">
-                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
-                    <span class="todo-text">${escapeHtml(todo.text)}</span>
-                    <button class="btn-delete" onclick="deleteTodo(${todo.id})" title="删除">×</button>
-                </li>
-            `).join('');
+            list.innerHTML = sortedTodos.map(todo => {
+                const dueInfo = formatDueTime(todo.dueTime);
+                const statusClass = getTodoStatusClass(todo);
+                
+                return `
+                    <li class="todo-item ${statusClass} ${todo.completed ? 'completed' : ''}">
+                        <div class="todo-item-row">
+                            <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
+                            <div class="todo-content">
+                                <span class="todo-text">${escapeHtml(todo.text)}</span>
+                                ${todo.dueTime ? `
+                                    <span class="todo-due-time ${dueInfo.status === 'overdue' ? 'overdue-text' : ''} ${dueInfo.status === 'upcoming' ? 'upcoming-text' : ''}">
+                                        📅 ${dueInfo.text}
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <button class="btn-delete" onclick="deleteTodo(${todo.id})" title="删除">×</button>
+                        </div>
+                    </li>
+                `;
+            }).join('');
         }
 
-        // 转义HTML防止XSS
+        function startDueTimeChecker() {
+            setInterval(() => {
+                renderTodos();
+            }, 60000);
+        }
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
+
+        function playAlarm() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 500);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCountdownDisplay();
+            updateStopwatchDisplay();
+            updateCurrentTime();
+            renderTodos();
+            setDefaultDueTime();
+            startDueTimeChecker();
+            
+            // 每秒更新当前时间
+            setInterval(updateCurrentTime, 1000);
+        });
     </script>
 </body>
 </html>
