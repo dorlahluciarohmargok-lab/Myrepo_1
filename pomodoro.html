@@ -2249,9 +2249,9 @@ function migrateTodos() {
 // ========== WALLPAPER FUNCTIONS ==========
 async function fetchBuiltinWallpapers(category = 'all') {
   try {
-    let url = '/api/wallpapers/builtin';
+    let url = API_BASE + '/wallpapers/builtin';
     if (category !== 'all') {
-      url = `/api/wallpapers/builtin/category/${category}`;
+      url = API_BASE + `/wallpapers/builtin/category/${category}`;
     }
     const response = await fetch(url);
     const result = await response.json();
@@ -2298,7 +2298,7 @@ async function fetchUserWallpapers() {
     return;
   }
   try {
-    const response = await fetch('/api/wallpapers/custom', {
+    const response = await fetch(API_BASE + '/wallpapers/custom', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const result = await response.json();
@@ -2355,7 +2355,7 @@ async function uploadWallpaper(file) {
   const formData = new FormData();
   formData.append('file', file);
   try {
-    const response = await fetch('/api/wallpapers/custom', {
+    const response = await fetch(API_BASE + '/wallpapers/custom', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: formData
@@ -2376,7 +2376,7 @@ async function deleteWallpaper(id) {
   if (!confirm('确定删除这张壁纸吗？')) return;
   const token = localStorage.getItem('pomodoro_token');
   try {
-    const response = await fetch(`/api/wallpapers/custom/${id}`, {
+    const response = await fetch(API_BASE + `/wallpapers/custom/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });

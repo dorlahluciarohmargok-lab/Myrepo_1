@@ -1,5 +1,6 @@
 com/pomodoro/dto/MoodRecordDTO.class
 com/pomodoro/entity/TimerRecord.class
+com/pomodoro/repository/WallpaperRepository.class
 com/pomodoro/dto/TimerRecordDTO.class
 com/pomodoro/service/AuthService.class
 com/pomodoro/repository/TodoRepository.class
@@ -13,11 +14,13 @@ com/pomodoro/repository/UserRepository.class
 com/pomodoro/util/JwtAuthenticationFilter.class
 com/pomodoro/controller/TodoController.class
 com/pomodoro/dto/TodoDTO.class
+com/pomodoro/dto/WallpaperDTO.class
 com/pomodoro/service/MoodService.class
 com/pomodoro/controller/MoodController.class
 com/pomodoro/PomodoroApplication.class
 com/pomodoro/entity/User.class
 com/pomodoro/util/JwtUtil.class
+com/pomodoro/controller/WallpaperController.class
 com/pomodoro/dto/UserDTO.class
 com/pomodoro/controller/AuthController.class
 com/pomodoro/repository/FocusStatisticRepository.class
@@ -25,9 +28,12 @@ com/pomodoro/entity/Todo.class
 com/pomodoro/entity/MoodRecord.class
 com/pomodoro/service/TodoService.class
 com/pomodoro/controller/TimerController.class
+com/pomodoro/service/WallpaperService.class
 com/pomodoro/config/SecurityConfig.class
 com/pomodoro/dto/AuthRequest.class
+com/pomodoro/entity/WallpaperCategory.class
 com/pomodoro/dto/ApiResponse.class
 com/pomodoro/repository/MoodRecordRepository.class
 com/pomodoro/repository/TimerRecordRepository.class
+com/pomodoro/entity/Wallpaper.class
 com/pomodoro/config/GlobalExceptionHandler.class

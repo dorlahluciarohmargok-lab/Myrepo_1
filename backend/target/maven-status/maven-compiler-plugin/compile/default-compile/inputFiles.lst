@@ -1,3 +1,4 @@
+/projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/entity/Wallpaper.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/entity/Todo.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/config/CorsConfig.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/service/TodoService.java
@@ -9,12 +10,15 @@
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/controller/MoodController.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/dto/AuthRequest.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/dto/TodoDTO.java
+/projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/service/WallpaperService.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/service/MoodService.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/repository/FocusStatisticRepository.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/repository/TimerRecordRepository.java
+/projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/dto/WallpaperDTO.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/entity/FocusStatistic.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/repository/UserRepository.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/entity/MoodRecord.java
+/projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/entity/WallpaperCategory.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/config/GlobalExceptionHandler.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/config/SecurityConfig.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/util/JwtUtil.java
@@ -25,7 +29,9 @@
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/dto/MoodRecordDTO.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/repository/TodoRepository.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/service/TimerService.java
+/projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/repository/WallpaperRepository.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/entity/User.java
+/projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/controller/WallpaperController.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/dto/TodoCreateRequest.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/dto/UserDTO.java
 /projects/sandbox/Myrepo_1/backend/src/main/java/com/pomodoro/controller/TimerController.java
