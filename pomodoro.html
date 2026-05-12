@@ -397,6 +397,262 @@ body::before {
 .nav-icon { font-size: 20px; color: var(--text-secondary); transition: color 0.2s; }
 .nav-label { font-size: 9px; color: var(--text-secondary); transition: all 0.2s; }
 .main-content::-webkit-scrollbar { width: 0; }
+/* Focus Mode Selector */
+.focus-mode-selector {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.focus-mode-btn {
+  padding: 8px 16px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 22px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.focus-mode-btn.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--secondary);
+  box-shadow: 0 2px 8px rgba(255,99,71,0.15);
+}
+.focus-mode-btn[data-focus="focus"].active {
+  border-color: #E53935;
+  color: #E53935;
+  background: #FFEBEE;
+}
+.focus-mode-btn[data-focus="general"].active {
+  border-color: #F9A825;
+  color: #F9A825;
+  background: #FFFDE7;
+}
+
+/* Focus Overlay */
+.focus-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9999;
+  background: rgba(20, 20, 30, 0.95);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: focusFadeIn 0.5s ease;
+}
+@keyframes focusFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.focus-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+.focus-overlay-emoji { font-size: 64px; animation: focusPulse 2s ease-in-out infinite; }
+@keyframes focusPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.focus-overlay-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.focus-overlay-timer {
+  font-size: 60px;
+  font-weight: 700;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  letter-spacing: 2px;
+}
+.focus-overlay-hint {
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.focus-give-up-btn {
+  margin-top: 40px;
+  padding: 12px 24px;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 25px;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.focus-give-up-btn:hover { opacity: 0.8; }
+.focus-give-up-btn .give-up-progress {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 0%;
+  background: rgba(255,99,71,0.4);
+  transition: width 0.1s linear;
+  border-radius: 25px;
+}
+.focus-give-up-btn.holding { opacity: 1; border-color: var(--primary); color: white; }
+
+/* Focus Warning Overlay */
+.focus-warning-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10000;
+  background: rgba(200, 50, 30, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: warningShake 0.5s ease;
+}
+@keyframes warningShake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+.focus-warning-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+.focus-warning-emoji { font-size: 56px; }
+.focus-warning-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.focus-warning-subtext {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.focus-warning-btn {
+  margin-top: 24px;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 25px;
+  background: white;
+  color: #E53935;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.focus-warning-btn:active { transform: scale(0.95); }
+
+/* General Mode Reminder Overlay */
+.general-reminder-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9998;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: focusFadeIn 0.3s ease;
+}
+.general-reminder-content {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.general-reminder-emoji { font-size: 48px; margin-bottom: 12px; }
+.general-reminder-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.general-reminder-subtext {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.general-reminder-btn {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 22px;
+  background: var(--primary);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255,99,71,0.3);
+  transition: transform 0.2s;
+}
+.general-reminder-btn:active { transform: scale(0.95); }
+
+/* Whitelist Panel */
+.whitelist-panel {
+  width: 100%;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  margin-top: 20px;
+  text-align: left;
+}
+.whitelist-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.whitelist-panel-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.whitelist-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 12px;
+  font-size: 13px;
+  font-family: 'Noto Sans SC', sans-serif;
+  outline: none;
+  resize: vertical;
+  line-height: 1.6;
+}
+.whitelist-textarea:focus { border-color: var(--primary); }
+.whitelist-save-btn {
+  margin-top: 10px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 16px;
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.whitelist-save-btn:active { transform: scale(0.95); }
+
 @media (max-height: 700px) {
   .timer-circle-wrapper { width: 180px; height: 180px; }
   .timer-svg { width: 180px; height: 180px; }
@@ -418,6 +674,11 @@ body::before {
     <!-- Timer View -->
     <div class="view active" id="viewTimer">
       <div class="timer-section">
+        <div class="focus-mode-selector" id="focusModeSelector">
+          <button class="focus-mode-btn active" data-focus="normal">🟢 普通</button>
+          <button class="focus-mode-btn" data-focus="focus">🔴 专注</button>
+          <button class="focus-mode-btn" data-focus="general">🟡 一般</button>
+        </div>
         <div class="timer-modes">
           <button class="timer-mode-btn active" data-mode="countdown">倒计时</button>
           <button class="timer-mode-btn" data-mode="stopwatch">正计时</button>
@@ -514,7 +775,7 @@ body::before {
       <div class="about-section">
         <div class="about-logo">🍅</div>
         <div class="about-name">番茄专注</div>
-        <div class="about-version">v3.0.0</div>
+        <div class="about-version">v3.1.0</div>
         <div class="about-desc">一款简洁优雅的专注计时工具，帮助你更好地管理时间，提升工作效率。</div>
         <div class="about-features">
           <div class="about-feature-item"><span class="about-feature-icon">⏱️</span><span class="about-feature-text">三种计时模式：倒计时 / 正计时 / 时钟</span></div>
@@ -523,12 +784,50 @@ body::before {
           <div class="about-feature-item"><span class="about-feature-icon">😊</span><span class="about-feature-text">每日心情记录与回顾</span></div>
           <div class="about-feature-item"><span class="about-feature-icon">🌤️</span><span class="about-feature-text">实时天气显示</span></div>
           <div class="about-feature-item"><span class="about-feature-icon">🎨</span><span class="about-feature-text">精美卡片背景与动态主题</span></div>
+          <div class="about-feature-item"><span class="about-feature-icon">🔒</span><span class="about-feature-text">三种专注模式：普通 / 专注 / 一般</span></div>
+        </div>
+        <div class="whitelist-panel" id="whitelistPanel">
+          <div class="whitelist-panel-title">📋 一般模式 - 应用白名单</div>
+          <div class="whitelist-panel-desc">在一般模式下允许使用的应用（每行一个）：</div>
+          <textarea class="whitelist-textarea" id="whitelistTextarea" placeholder="例如：&#10;微信&#10;备忘录&#10;计算器"></textarea>
+          <button class="whitelist-save-btn" id="whitelistSaveBtn">保存白名单</button>
         </div>
       </div>
     </div>
   </div>
+  <!-- Focus Mode Overlay -->
+  <div class="focus-overlay" id="focusOverlay" style="display:none;">
+    <div class="focus-overlay-content">
+      <div class="focus-overlay-emoji">🍅</div>
+      <div class="focus-overlay-title">专注中</div>
+      <div class="focus-overlay-timer" id="focusOverlayTimer">25:00</div>
+      <div class="focus-overlay-hint">请保持专注，不要离开</div>
+      <button class="focus-give-up-btn" id="focusGiveUpBtn"><span class="give-up-progress"></span>长按3秒放弃专注</button>
+    </div>
+  </div>
+
+  <!-- Focus Warning Overlay (when user leaves in focus mode) -->
+  <div class="focus-warning-overlay" id="focusWarningOverlay" style="display:none;">
+    <div class="focus-warning-content">
+      <div class="focus-warning-emoji">⚠️</div>
+      <div class="focus-warning-text">检测到你离开了专注页面！</div>
+      <div class="focus-warning-subtext">请回到专注状态</div>
+      <button class="focus-warning-btn" id="focusWarningBtn">继续专注</button>
+    </div>
+  </div>
+
+  <!-- General Mode Reminder Overlay -->
+  <div class="general-reminder-overlay" id="generalReminderOverlay" style="display:none;">
+    <div class="general-reminder-content">
+      <div class="general-reminder-emoji">🤔</div>
+      <div class="general-reminder-text">你离开了专注页面，是否继续？</div>
+      <div class="general-reminder-subtext">保持专注，效率更高哦~</div>
+      <button class="general-reminder-btn" id="generalReminderBtn">继续专注</button>
+    </div>
+  </div>
+
   <!-- Bottom Navigation - 5 items -->
-  <div class="bottom-nav">
+  <div class="bottom-nav" id="bottomNav">
     <div class="nav-item active" data-view="viewTimer"><span class="nav-icon">⏱️</span><span class="nav-label">专注</span></div>
     <div class="nav-item" data-view="viewTodo"><span class="nav-icon">📝</span><span class="nav-label">待办</span></div>
     <div class="nav-item" data-view="viewStats"><span class="nav-icon">📊</span><span class="nav-label">统计</span></div>
@@ -601,6 +900,16 @@ let todoTimerInterval = null;
 let activeTodoTimerId = null;
 let bgIndexCounter = parseInt(localStorage.getItem('pomodoro_bg_counter') || '0');
 
+// ========== FOCUS MODE STATE ==========
+let focusMode = localStorage.getItem('pomodoro_focus_mode') || 'normal'; // normal, focus, general
+let focusModeActive = false; // Whether a focus/general session is currently running
+let giveUpHoldTimer = null;
+let giveUpHoldStart = 0;
+let giveUpProgressInterval = null;
+let focusAlarmAudio = null;
+let visibilityHandler = null;
+let beforeUnloadHandler = null;
+
 // ========== DOM ELEMENTS ==========
 const progressCircle = document.getElementById('progressCircle');
 const timerTimeEl = document.getElementById('timerTime');
@@ -647,9 +956,266 @@ function getTodayKey() { return new Date().toISOString().split('T')[0]; }
 </script>
 
 <script>
+// ========== FOCUS MODE LOGIC ==========
+// Initialize focus mode selector
+function initFocusMode() {
+  const savedMode = localStorage.getItem('pomodoro_focus_mode') || 'normal';
+  focusMode = savedMode;
+  document.querySelectorAll('.focus-mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.focus === focusMode);
+  });
+  
+  // Load whitelist
+  const whitelist = localStorage.getItem('pomodoro_whitelist') || '';
+  const whitelistTextarea = document.getElementById('whitelistTextarea');
+  if (whitelistTextarea) whitelistTextarea.value = whitelist;
+}
+
+// Focus mode selector click handler
+document.getElementById('focusModeSelector').addEventListener('click', e => {
+  const btn = e.target.closest('.focus-mode-btn');
+  if (!btn) return;
+  // Don't allow changing mode while timer is running in focus/general mode
+  if (focusModeActive) return;
+  document.querySelectorAll('.focus-mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  focusMode = btn.dataset.focus;
+  localStorage.setItem('pomodoro_focus_mode', focusMode);
+});
+
+// Whitelist save button
+document.getElementById('whitelistSaveBtn').addEventListener('click', () => {
+  const textarea = document.getElementById('whitelistTextarea');
+  localStorage.setItem('pomodoro_whitelist', textarea.value);
+  alert('白名单已保存！');
+});
+
+// ========== FOCUS MODE: Enter/Exit ==========
+function enterFocusMode() {
+  focusModeActive = true;
+  const overlay = document.getElementById('focusOverlay');
+  overlay.style.display = 'flex';
+  
+  // Hide bottom nav
+  document.getElementById('bottomNav').style.display = 'none';
+  
+  // Enter fullscreen
+  try {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen();
+    }
+  } catch(e) {}
+  
+  // Add beforeunload warning
+  beforeUnloadHandler = function(e) {
+    e.preventDefault();
+    e.returnValue = '你正在专注模式中，确定要离开吗？';
+    return e.returnValue;
+  };
+  window.addEventListener('beforeunload', beforeUnloadHandler);
+  
+  // Add visibility change handler for focus mode
+  visibilityHandler = function() {
+    if (document.hidden && focusModeActive && focusMode === 'focus') {
+      // User left the page - play alarm when they come back
+      playFocusAlarm();
+    } else if (!document.hidden && focusModeActive && focusMode === 'focus') {
+      // User came back - show warning overlay
+      document.getElementById('focusWarningOverlay').style.display = 'flex';
+    }
+  };
+  document.addEventListener('visibilitychange', visibilityHandler);
+  
+  // Update overlay timer
+  updateFocusOverlayTimer();
+}
+
+function exitFocusMode(completed) {
+  focusModeActive = false;
+  const overlay = document.getElementById('focusOverlay');
+  overlay.style.display = 'none';
+  document.getElementById('focusWarningOverlay').style.display = 'none';
+  
+  // Show bottom nav
+  document.getElementById('bottomNav').style.display = 'flex';
+  
+  // Exit fullscreen
+  try {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else if (document.webkitFullscreenElement) {
+      document.webkitExitFullscreen();
+    }
+  } catch(e) {}
+  
+  // Remove event listeners
+  if (beforeUnloadHandler) {
+    window.removeEventListener('beforeunload', beforeUnloadHandler);
+    beforeUnloadHandler = null;
+  }
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler);
+    visibilityHandler = null;
+  }
+  
+  // Stop alarm
+  stopFocusAlarm();
+  
+  // Celebrate if completed
+  if (completed) {
+    showFocusCompleteCelebration();
+  }
+}
+
+function enterGeneralMode() {
+  focusModeActive = true;
+  
+  // Add beforeunload gentle warning
+  beforeUnloadHandler = function(e) {
+    e.preventDefault();
+    e.returnValue = '你正在专注中，确定要离开吗？';
+    return e.returnValue;
+  };
+  window.addEventListener('beforeunload', beforeUnloadHandler);
+  
+  // Add visibility change handler for general mode
+  visibilityHandler = function() {
+    if (!document.hidden && focusModeActive && focusMode === 'general') {
+      // User came back - show gentle reminder
+      document.getElementById('generalReminderOverlay').style.display = 'flex';
+    }
+  };
+  document.addEventListener('visibilitychange', visibilityHandler);
+}
+
+function exitGeneralMode() {
+  focusModeActive = false;
+  document.getElementById('generalReminderOverlay').style.display = 'none';
+  
+  // Remove event listeners
+  if (beforeUnloadHandler) {
+    window.removeEventListener('beforeunload', beforeUnloadHandler);
+    beforeUnloadHandler = null;
+  }
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler);
+    visibilityHandler = null;
+  }
+}
+
+// ========== FOCUS MODE: Overlay Timer Update ==========
+function updateFocusOverlayTimer() {
+  if (!focusModeActive || focusMode !== 'focus') return;
+  const overlayTimer = document.getElementById('focusOverlayTimer');
+  if (timerMode === 'countdown') {
+    overlayTimer.textContent = formatTimerDisplay(timerRemaining);
+  } else if (timerMode === 'stopwatch') {
+    overlayTimer.textContent = formatTimerDisplay(stopwatchElapsed);
+  }
+}
+
+// ========== FOCUS MODE: Alarm ==========
+function playFocusAlarm() {
+  try {
+    // Create an oscillator-based alarm sound
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.value = 0.3;
+    oscillator.start();
+    focusAlarmAudio = { oscillator, audioCtx };
+    // Auto-stop after 3 seconds
+    setTimeout(() => stopFocusAlarm(), 3000);
+  } catch(e) {}
+}
+
+function stopFocusAlarm() {
+  if (focusAlarmAudio) {
+    try {
+      focusAlarmAudio.oscillator.stop();
+      focusAlarmAudio.audioCtx.close();
+    } catch(e) {}
+    focusAlarmAudio = null;
+  }
+}
+
+// ========== FOCUS MODE: Give Up Button (3-second hold) ==========
+const giveUpBtn = document.getElementById('focusGiveUpBtn');
+const giveUpProgress = giveUpBtn.querySelector('.give-up-progress');
+
+function startGiveUp(e) {
+  e.preventDefault();
+  giveUpHoldStart = Date.now();
+  giveUpBtn.classList.add('holding');
+  giveUpProgressInterval = setInterval(() => {
+    const elapsed = Date.now() - giveUpHoldStart;
+    const pct = Math.min(100, (elapsed / 3000) * 100);
+    giveUpProgress.style.width = pct + '%';
+    if (elapsed >= 3000) {
+      // Successfully held for 3 seconds - give up
+      clearInterval(giveUpProgressInterval);
+      giveUpProgressInterval = null;
+      giveUpBtn.classList.remove('holding');
+      giveUpProgress.style.width = '0%';
+      // Stop the timer and exit focus mode
+      stopTimer();
+      timerState = 'stopped';
+      btnStartPause.textContent = '\u25B6';
+      if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
+      else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
+      exitFocusMode(false);
+    }
+  }, 50);
+}
+
+function endGiveUp(e) {
+  e.preventDefault();
+  if (giveUpProgressInterval) {
+    clearInterval(giveUpProgressInterval);
+    giveUpProgressInterval = null;
+  }
+  giveUpBtn.classList.remove('holding');
+  giveUpProgress.style.width = '0%';
+}
+
+giveUpBtn.addEventListener('mousedown', startGiveUp);
+giveUpBtn.addEventListener('mouseup', endGiveUp);
+giveUpBtn.addEventListener('mouseleave', endGiveUp);
+giveUpBtn.addEventListener('touchstart', startGiveUp);
+giveUpBtn.addEventListener('touchend', endGiveUp);
+giveUpBtn.addEventListener('touchcancel', endGiveUp);
+
+// ========== FOCUS MODE: Warning Button ==========
+document.getElementById('focusWarningBtn').addEventListener('click', () => {
+  document.getElementById('focusWarningOverlay').style.display = 'none';
+  stopFocusAlarm();
+});
+
+// ========== GENERAL MODE: Reminder Button ==========
+document.getElementById('generalReminderBtn').addEventListener('click', () => {
+  document.getElementById('generalReminderOverlay').style.display = 'none';
+});
+
+// ========== FOCUS MODE: Celebration ==========
+function showFocusCompleteCelebration() {
+  // Brief celebration notification
+  if (Notification.permission === 'granted') {
+    new Notification('🎉 太棒了！', { body: '专注时间完成！你做到了！' });
+  }
+}
+
 // ========== NAVIGATION ==========
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
+    // Block navigation in focus mode
+    if (focusMode === 'focus' && focusModeActive) return;
+    
     const viewId = item.dataset.view;
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     item.classList.add('active');
@@ -732,25 +1298,53 @@ customDurationInput.addEventListener('change', () => {
 // ========== TIMER CONTROLS ==========
 btnStartPause.addEventListener('click', () => {
   if (timerMode === 'countdown') {
-    if (timerState === 'stopped' || timerState === 'paused') startCountdown();
-    else pauseTimer();
+    if (timerState === 'stopped' || timerState === 'paused') {
+      // Check if pause is allowed in current focus mode
+      if (timerState === 'paused' && focusMode === 'focus' && focusModeActive) return; // Can't unpause in strict mode (shouldn't reach here)
+      startCountdown();
+    } else {
+      // Pausing - check if allowed
+      if (focusMode === 'focus' && focusModeActive) return; // Can't pause in focus mode
+      pauseTimer();
+    }
   } else if (timerMode === 'stopwatch') {
-    if (timerState === 'stopped' || timerState === 'paused') startStopwatch();
-    else pauseTimer();
+    if (timerState === 'stopped' || timerState === 'paused') {
+      if (timerState === 'paused' && focusMode === 'focus' && focusModeActive) return;
+      startStopwatch();
+    } else {
+      if (focusMode === 'focus' && focusModeActive) return; // Can't pause in focus mode
+      pauseTimer();
+    }
   }
 });
 
 btnReset.addEventListener('click', () => {
+  // Can't reset in focus mode
+  if (focusMode === 'focus' && focusModeActive) return;
+  
   stopTimer();
   timerState = 'stopped';
   btnStartPause.textContent = '\u25B6';
   if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
   else if (timerMode === 'stopwatch') { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
+  
+  // Exit general mode if active
+  if (focusMode === 'general' && focusModeActive) exitGeneralMode();
 });
 
 function startCountdown() {
   timerState = 'running';
   btnStartPause.textContent = '\u23F8';
+  
+  // Apply focus mode behaviors
+  if (focusMode === 'focus' && !focusModeActive) {
+    enterFocusMode();
+    btnStartPause.style.display = 'none'; // Hide pause button
+    btnReset.style.display = 'none'; // Hide reset button
+  } else if (focusMode === 'general' && !focusModeActive) {
+    enterGeneralMode();
+  }
+  
   timerInterval = setInterval(() => {
     timerRemaining--;
     if (timerRemaining <= 0) {
@@ -758,25 +1352,44 @@ function startCountdown() {
       stopTimer();
       timerState = 'stopped';
       btnStartPause.textContent = '\u25B6';
+      btnStartPause.style.display = 'flex';
+      btnReset.style.display = 'flex';
       updateProgress(0);
       updateTimerDisplay(0);
       if (Notification.permission === 'granted') new Notification('🍅 番茄专注', { body: '专注时间结束！休息一下吧~' });
       recordSession(timerDuration, 'countdown');
       saveTimerToServer('countdown', timerDuration, timerDuration, true);
+      // Exit focus/general mode
+      if (focusMode === 'focus' && focusModeActive) exitFocusMode(true);
+      else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
       return;
     }
     updateTimerDisplay(timerRemaining);
     updateProgress(timerRemaining / timerDuration);
+    // Update focus overlay timer
+    if (focusModeActive && focusMode === 'focus') updateFocusOverlayTimer();
   }, 1000);
 }
 
 function startStopwatch() {
   timerState = 'running';
   btnStartPause.textContent = '\u23F8';
+  
+  // Apply focus mode behaviors
+  if (focusMode === 'focus' && !focusModeActive) {
+    enterFocusMode();
+    btnStartPause.style.display = 'none'; // Hide pause button
+    btnReset.style.display = 'none'; // Hide reset button
+  } else if (focusMode === 'general' && !focusModeActive) {
+    enterGeneralMode();
+  }
+  
   timerInterval = setInterval(() => {
     stopwatchElapsed++;
     updateTimerDisplay(stopwatchElapsed);
     updateProgress((stopwatchElapsed % 3600) / 3600);
+    // Update focus overlay timer
+    if (focusModeActive && focusMode === 'focus') updateFocusOverlayTimer();
   }, 1000);
 }
 
@@ -800,6 +1413,8 @@ function pauseTimer() {
   if (timerMode === 'stopwatch' && stopwatchElapsed > 60) {
     recordSession(stopwatchElapsed, 'stopwatch');
     saveTimerToServer('stopwatch', 0, stopwatchElapsed, true);
+    // Exit general mode if active
+    if (focusMode === 'general' && focusModeActive) exitGeneralMode();
   }
 }
 
@@ -964,6 +1579,8 @@ document.getElementById('todoList').addEventListener('click', e => {
   } else if (resetBtn) {
     e.stopPropagation();
     const id = parseInt(resetBtn.dataset.id);
+    // Can't reset in focus mode
+    if (focusMode === 'focus' && focusModeActive) return;
     // Stop timer if running
     if (activeTodoTimerId === id) {
       stopTodoTimer();
@@ -977,6 +1594,8 @@ document.getElementById('todoList').addEventListener('click', e => {
       saveTodos();
       renderTodos();
     }
+    // Exit general mode if active
+    if (focusMode === 'general' && focusModeActive) exitGeneralMode();
   } else if (playBtn) {
     e.stopPropagation();
     const id = parseInt(playBtn.dataset.id);
@@ -990,7 +1609,8 @@ function toggleTodoTimer(todoId) {
   if (!todo) return;
 
   if (activeTodoTimerId === todoId && todo.timerRunning) {
-    // Pause this timer
+    // Pause this timer - check if allowed
+    if (focusMode === 'focus' && focusModeActive) return; // Can't pause in focus mode
     stopTodoTimer();
     todo.timerRunning = false;
     saveTodos(); renderTodos();
@@ -998,6 +1618,8 @@ function toggleTodoTimer(todoId) {
     if (todo.timerMode === 'stopwatch' && todo.timerElapsed > 60) {
       recordSession(todo.timerElapsed, 'stopwatch');
     }
+    // Exit general mode
+    if (focusMode === 'general' && focusModeActive) exitGeneralMode();
   } else {
     // Stop any other running timer
     if (activeTodoTimerId !== null && activeTodoTimerId !== todoId) {
@@ -1010,6 +1632,13 @@ function toggleTodoTimer(todoId) {
     activeTodoTimerId = todoId;
     saveTodos(); renderTodos();
     startTodoTimer(todoId);
+    
+    // Apply focus mode behaviors for per-todo timer
+    if (focusMode === 'focus' && !focusModeActive) {
+      enterFocusMode();
+    } else if (focusMode === 'general' && !focusModeActive) {
+      enterGeneralMode();
+    }
   }
 }
 
@@ -1031,15 +1660,26 @@ function startTodoTimer(todoId) {
         saveTodos(); renderTodos();
         if (Notification.permission === 'granted') new Notification('🍅 任务完成', { body: `"${todo.title}" 计时结束！` });
         recordSession(todo.timerDuration, 'countdown');
+        // Exit focus/general mode
+        if (focusMode === 'focus' && focusModeActive) exitFocusMode(true);
+        else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
         return;
       }
-      // Update display (even if view is hidden, element may exist)
+      // Update display
       const el = document.querySelector(`.todo-card-timer-display[data-id="${todoId}"]`);
       if (el) el.textContent = formatTimerDisplay(remaining);
+      // Update focus overlay
+      if (focusModeActive && focusMode === 'focus') {
+        document.getElementById('focusOverlayTimer').textContent = formatTimerDisplay(remaining);
+      }
     } else {
       // Stopwatch
       const el = document.querySelector(`.todo-card-timer-display[data-id="${todoId}"]`);
       if (el) el.textContent = formatTimerDisplay(todo.timerElapsed);
+      // Update focus overlay
+      if (focusModeActive && focusMode === 'focus') {
+        document.getElementById('focusOverlayTimer').textContent = formatTimerDisplay(todo.timerElapsed);
+      }
     }
     // Save every 5 seconds
     if (todo.timerElapsed % 5 === 0) saveTodos();
@@ -1321,6 +1961,7 @@ function migrateTodos() {
 // ========== INIT ==========
 function init() {
   migrateTodos();
+  initFocusMode();
   updateDate();
   updateBackground();
   updateQuote();
