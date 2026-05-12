@@ -749,6 +749,43 @@ body::before {
 .completion-card-btn:active { transform: scale(0.95); }
 .completion-card-btn:hover { transform: scale(1.03); }
 
+/* Wallpaper View */
+.wallpaper-section { padding-top: 10px; }
+.wallpaper-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+.wallpaper-category-tabs {
+  display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px;
+}
+.wallpaper-category-tab {
+  padding: 8px 16px; border: 1.5px solid var(--secondary); border-radius: 20px;
+  font-size: 13px; font-family: 'Noto Sans SC', sans-serif; cursor: pointer;
+  background: var(--card-bg); color: var(--text-secondary); transition: all 0.2s;
+  white-space: nowrap; flex-shrink: 0;
+}
+.wallpaper-category-tab.active { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
+.wallpaper-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.wallpaper-item {
+  aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; cursor: pointer;
+  position: relative; box-shadow: var(--shadow); transition: transform 0.2s;
+}
+.wallpaper-item:hover { transform: scale(1.03); }
+.wallpaper-item.selected { border: 3px solid var(--primary); }
+.wallpaper-item img { width: 100%; height: 100%; object-fit: cover; }
+.wallpaper-item-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 8px; color: white;
+  font-size: 11px; opacity: 0; transition: opacity 0.2s;
+}
+.wallpaper-item:hover .wallpaper-item-overlay { opacity: 1; }
+.wallpaper-upload-zone {
+  border: 2px dashed var(--secondary); border-radius: 12px; padding: 20px;
+  text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px;
+}
+.wallpaper-upload-zone:hover { border-color: var(--primary); background: var(--secondary); }
+.wallpaper-upload-zone input { display: none; }
+.wallpaper-upload-icon { font-size: 32px; margin-bottom: 8px; }
+.wallpaper-upload-text { font-size: 13px; color: var(--text-secondary); }
+.wallpaper-section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; margin-top: 20px; }
+
 @media (max-height: 700px) {
   .timer-circle-wrapper { width: 180px; height: 180px; }
   .timer-svg { width: 180px; height: 180px; }
@@ -881,6 +918,7 @@ body::before {
           <div class="about-feature-item"><span class="about-feature-icon">🌤️</span><span class="about-feature-text">实时天气显示</span></div>
           <div class="about-feature-item"><span class="about-feature-icon">🎨</span><span class="about-feature-text">精美卡片背景与动态主题</span></div>
           <div class="about-feature-item"><span class="about-feature-icon">🔒</span><span class="about-feature-text">三种专注模式：普通 / 专注 / 一般</span></div>
+          <div class="about-feature-item"><span class="about-feature-icon">🖼️</span><span class="about-feature-text">壁纸选择器，个性化应用背景</span></div>
         </div>
         <div class="whitelist-panel" id="whitelistPanel">
           <div class="whitelist-panel-title">📋 一般模式 - 应用白名单</div>
@@ -888,6 +926,30 @@ body::before {
           <textarea class="whitelist-textarea" id="whitelistTextarea" placeholder="例如：&#10;微信&#10;备忘录&#10;计算器"></textarea>
           <button class="whitelist-save-btn" id="whitelistSaveBtn">保存白名单</button>
         </div>
+      </div>
+    </div>
+    <!-- Wallpaper View -->
+    <div class="view" id="viewWallpaper">
+      <div class="wallpaper-section">
+        <div class="wallpaper-title">壁纸选择</div>
+        <div class="wallpaper-upload-zone" id="wallpaperUploadZone">
+          <input type="file" id="wallpaperFileInput" accept="image/*">
+          <div class="wallpaper-upload-icon">📤</div>
+          <div class="wallpaper-upload-text">点击或拖拽上传自定义壁纸</div>
+        </div>
+        <div class="wallpaper-category-tabs" id="wallpaperCategoryTabs">
+          <button class="wallpaper-category-tab active" data-category="all">全部</button>
+          <button class="wallpaper-category-tab" data-category="LANDSCAPE">风景</button>
+          <button class="wallpaper-category-tab" data-category="WEATHER">天气</button>
+          <button class="wallpaper-category-tab" data-category="ARCHITECTURE">建筑</button>
+          <button class="wallpaper-category-tab" data-category="ANIMAL">动物</button>
+          <button class="wallpaper-category-tab" data-category="PLANT">植物</button>
+          <button class="wallpaper-category-tab" data-category="OTHER">其他</button>
+        </div>
+        <div class="wallpaper-section-title" id="wallpaperSectionTitle">内置壁纸</div>
+        <div class="wallpaper-grid" id="wallpaperGrid"></div>
+        <div class="wallpaper-section-title" id="customWallpaperTitle" style="display:none;">我的壁纸</div>
+        <div class="wallpaper-grid" id="customWallpaperGrid" style="display:none;"></div>
       </div>
     </div>
   </div>
@@ -943,7 +1005,7 @@ body::before {
     <div class="nav-item" data-view="viewTodo"><span class="nav-icon">📝</span><span class="nav-label">待办</span></div>
     <div class="nav-item" data-view="viewStats"><span class="nav-icon">📊</span><span class="nav-label">统计</span></div>
     <div class="nav-item" data-view="viewMood"><span class="nav-icon">😊</span><span class="nav-label">心情</span></div>
-    <div class="nav-item" data-view="viewAbout"><span class="nav-icon">ℹ️</span><span class="nav-label">关于</span></div>
+    <div class="nav-item" data-view="viewWallpaper"><span class="nav-icon">🖼️</span><span class="nav-label">壁纸</span></div>
   </div>
 </div>
 
@@ -1010,6 +1072,11 @@ let stats = JSON.parse(localStorage.getItem('pomodoro_stats') || '{"sessions":[]
 let todoTimerInterval = null;
 let activeTodoTimerId = null;
 let bgIndexCounter = parseInt(localStorage.getItem('pomodoro_bg_counter') || '0');
+
+// ========== WALLPAPER STATE ==========
+let currentWallpaper = JSON.parse(localStorage.getItem('pomodoro_wallpaper') || 'null');
+let builtinWallpapers = [];
+let userWallpapers = [];
 
 // ========== COMPLETION CARD DATA ==========
 const COMPLETION_BG_IMAGES = [
@@ -2179,6 +2246,191 @@ function migrateTodos() {
   saveTodos();
 }
 
+// ========== WALLPAPER FUNCTIONS ==========
+async function fetchBuiltinWallpapers(category = 'all') {
+  try {
+    let url = '/api/wallpapers/builtin';
+    if (category !== 'all') {
+      url = `/api/wallpapers/builtin/category/${category}`;
+    }
+    const response = await fetch(url);
+    const result = await response.json();
+    if (result.code === 200) {
+      builtinWallpapers = result.data;
+      renderBuiltinWallpapers();
+    }
+  } catch (e) {
+    console.error('Failed to fetch wallpapers:', e);
+    // 如果后端不可用，使用默认壁纸
+    builtinWallpapers = getDefaultWallpapers();
+    renderBuiltinWallpapers();
+  }
+}
+
+function getDefaultWallpapers() {
+  // 返回一些默认壁纸作为降级方案
+  return [];
+}
+
+function renderBuiltinWallpapers() {
+  const grid = document.getElementById('wallpaperGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  builtinWallpapers.forEach(wp => {
+    const item = document.createElement('div');
+    item.className = 'wallpaper-item' + (currentWallpaper && currentWallpaper.id === wp.id ? ' selected' : '');
+    item.innerHTML = `
+      <img src="${wp.imageUrl}" alt="${wp.name}" loading="lazy">
+      <div class="wallpaper-item-overlay">${wp.name}</div>
+    `;
+    item.addEventListener('click', () => applyWallpaper(wp, item));
+    grid.appendChild(item);
+  });
+}
+
+async function fetchUserWallpapers() {
+  const token = localStorage.getItem('pomodoro_token');
+  if (!token) {
+    const customTitle = document.getElementById('customWallpaperTitle');
+    const customGrid = document.getElementById('customWallpaperGrid');
+    if (customTitle) customTitle.style.display = 'none';
+    if (customGrid) customGrid.style.display = 'none';
+    return;
+  }
+  try {
+    const response = await fetch('/api/wallpapers/custom', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const result = await response.json();
+    if (result.code === 200) {
+      userWallpapers = result.data;
+      renderUserWallpapers();
+      const customTitle = document.getElementById('customWallpaperTitle');
+      const customGrid = document.getElementById('customWallpaperGrid');
+      if (customTitle) customTitle.style.display = userWallpapers.length > 0 ? 'block' : 'none';
+      if (customGrid) customGrid.style.display = userWallpapers.length > 0 ? 'grid' : 'none';
+    }
+  } catch (e) {
+    console.error('Failed to fetch user wallpapers:', e);
+  }
+}
+
+function renderUserWallpapers() {
+  const grid = document.getElementById('customWallpaperGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  userWallpapers.forEach(wp => {
+    const item = document.createElement('div');
+    item.className = 'wallpaper-item' + (currentWallpaper && currentWallpaper.id === wp.id ? ' selected' : '');
+    item.innerHTML = `
+      <img src="${wp.imageUrl}" alt="${wp.name}" loading="lazy">
+      <div class="wallpaper-item-overlay">${wp.name} <span style="float:right;cursor:pointer;" onclick="event.stopPropagation();deleteWallpaper(${wp.id})">🗑️</span></div>
+    `;
+    item.addEventListener('click', () => applyWallpaper(wp, item));
+    grid.appendChild(item);
+  });
+}
+
+function applyWallpaper(wallpaper, element) {
+  currentWallpaper = wallpaper;
+  localStorage.setItem('pomodoro_wallpaper', JSON.stringify(wallpaper));
+  
+  // 应用背景
+  const appContainer = document.getElementById('app');
+  appContainer.style.backgroundImage = `url('${wallpaper.imageUrl}')`;
+  appContainer.style.backgroundSize = 'cover';
+  appContainer.style.backgroundPosition = 'center';
+  
+  // 更新选中状态
+  document.querySelectorAll('.wallpaper-item').forEach(item => item.classList.remove('selected'));
+  if (element) element.classList.add('selected');
+}
+
+async function uploadWallpaper(file) {
+  const token = localStorage.getItem('pomodoro_token');
+  if (!token) {
+    alert('请先登录');
+    return;
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const response = await fetch('/api/wallpapers/custom', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+    const result = await response.json();
+    if (result.code === 200) {
+      fetchUserWallpapers();
+    } else {
+      alert(result.message || '上传失败');
+    }
+  } catch (e) {
+    console.error('Upload failed:', e);
+    alert('上传失败');
+  }
+}
+
+async function deleteWallpaper(id) {
+  if (!confirm('确定删除这张壁纸吗？')) return;
+  const token = localStorage.getItem('pomodoro_token');
+  try {
+    const response = await fetch(`/api/wallpapers/custom/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const result = await response.json();
+    if (result.code === 200) {
+      fetchUserWallpapers();
+    }
+  } catch (e) {
+    console.error('Delete failed:', e);
+  }
+}
+
+function initWallpaperView() {
+  fetchBuiltinWallpapers();
+  fetchUserWallpapers();
+  
+  // 分类标签点击
+  document.querySelectorAll('.wallpaper-category-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.wallpaper-category-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      fetchBuiltinWallpapers(tab.dataset.category);
+    });
+  });
+  
+  // 上传区域
+  const uploadZone = document.getElementById('wallpaperUploadZone');
+  const fileInput = document.getElementById('wallpaperFileInput');
+  
+  if (!uploadZone || !fileInput) return;
+  
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--primary)'; });
+  uploadZone.addEventListener('dragleave', () => uploadZone.style.borderColor = '');
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.style.borderColor = '';
+    if (e.dataTransfer.files.length > 0) uploadWallpaper(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) uploadWallpaper(fileInput.files[0]);
+  });
+}
+
+// 应用保存的壁纸
+function applySavedWallpaper() {
+  if (currentWallpaper) {
+    const appContainer = document.getElementById('app');
+    appContainer.style.backgroundImage = `url('${currentWallpaper.imageUrl}')`;
+    appContainer.style.backgroundSize = 'cover';
+    appContainer.style.backgroundPosition = 'center';
+  }
+}
+
 // ========== INIT ==========
 function init() {
   migrateTodos();
@@ -2192,6 +2444,8 @@ function init() {
   renderStats();
   requestNotification();
   updateProgress(1);
+  initWallpaperView();
+  applySavedWallpaper();
   setInterval(() => { updateDate(); updateBackground(); updateQuote(); }, 60000);
   setInterval(fetchWeather, 1800000);
 }
