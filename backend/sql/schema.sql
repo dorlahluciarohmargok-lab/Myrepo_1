@@ -105,3 +105,21 @@ CREATE TABLE IF NOT EXISTS focus_statistics (
     INDEX idx_user_id (user_id),
     INDEX idx_stat_date (stat_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='专注统计表';
+
+-- ============================================
+-- 6. 壁纸表 (wallpapers)
+-- ============================================
+CREATE TABLE IF NOT EXISTS wallpapers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '壁纸ID',
+    name VARCHAR(200) NOT NULL COMMENT '壁纸名称',
+    category VARCHAR(50) NOT NULL COMMENT '分类: LANDSCAPE/WEATHER/ARCHITECTURE/ANIMAL/PLANT/OTHER',
+    image_url VARCHAR(1000) NOT NULL COMMENT '图片URL',
+    is_builtin BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否内置壁纸',
+    user_id BIGINT COMMENT '用户ID(自定义壁纸)',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_category (category),
+    INDEX idx_is_builtin (is_builtin),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='壁纸表';
