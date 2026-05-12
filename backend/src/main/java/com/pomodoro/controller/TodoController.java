@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/todos")
@@ -44,6 +45,13 @@ public class TodoController {
     public ApiResponse<TodoDTO> toggleTodo(Authentication auth, @PathVariable Long id) {
         Long userId = (Long) auth.getPrincipal();
         return ApiResponse.success(todoService.toggleComplete(userId, id));
+    }
+
+    @PatchMapping("/{id}/timer")
+    public ApiResponse<TodoDTO> updateTimerElapsed(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Integer> body) {
+        Long userId = (Long) auth.getPrincipal();
+        Integer elapsed = body.get("timerElapsed");
+        return ApiResponse.success(todoService.updateTimerElapsed(userId, id, elapsed));
     }
 
     @DeleteMapping("/{id}")

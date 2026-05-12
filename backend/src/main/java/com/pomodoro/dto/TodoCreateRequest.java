@@ -20,4 +20,10 @@ public class TodoCreateRequest {
     private LocalDate dueDate;
 
     private Integer priority = 0;
+
+    private String timerMode = "countdown";
+
+    private Integer timerDuration = 1500;
+
+    private Integer bgIndex;
 }

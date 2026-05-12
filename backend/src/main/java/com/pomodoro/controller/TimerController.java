@@ -40,4 +40,10 @@ public class TimerController {
         Long userId = (Long) auth.getPrincipal();
         return ApiResponse.success(timerService.getWeekStats(userId));
     }
+
+    @GetMapping("/stats/summary")
+    public ApiResponse<Map<String, Object>> getStatsSummary(Authentication auth) {
+        Long userId = (Long) auth.getPrincipal();
+        return ApiResponse.success(timerService.getStatsSummary(userId));
+    }
 }

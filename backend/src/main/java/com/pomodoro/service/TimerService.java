@@ -100,6 +100,43 @@ public class TimerService {
             .collect(Collectors.toList());
     }
 
+    public Map<String, Object> getStatsSummary(Long userId) {
+        List<FocusStatistic> allStats = statisticRepository.findByUserIdAndStatDateBetweenOrderByStatDateAsc(
+            userId, LocalDate.now().minusYears(1), LocalDate.now());
+
+        int totalSessions = allStats.stream().mapToInt(s -> s.getFocusCount() != null ? s.getFocusCount() : 0).sum();
+        int totalFocusTime = allStats.stream().mapToInt(s -> s.getTotalFocusTime() != null ? s.getTotalFocusTime() : 0).sum();
+        int daysWithActivity = allStats.size();
+        int dailyAvg = daysWithActivity > 0 ? totalFocusTime / daysWithActivity : 0;
+
+        // Find longest session from timer records
+        List<TimerRecord> records = timerRepository.findByUserIdOrderByStartedAtDesc(userId);
+        int longestSession = records.stream().mapToInt(r -> r.getActualDuration() != null ? r.getActualDuration() : 0).max().orElse(0);
+
+        // Calculate streak
+        int streak = 0;
+        LocalDate checkDate = LocalDate.now();
+        for (int i = 0; i < 365; i++) {
+            LocalDate d = checkDate.minusDays(i);
+            boolean hasActivity = allStats.stream().anyMatch(s -> s.getStatDate().equals(d));
+            if (hasActivity) streak++;
+            else break;
+        }
+
+        int completedTodos = allStats.stream().mapToInt(s -> s.getCompletedTodos() != null ? s.getCompletedTodos() : 0).sum();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalSessions", totalSessions);
+        result.put("totalFocusTime", totalFocusTime);
+        result.put("dailyAvg", dailyAvg);
+        result.put("longestSession", longestSession);
+        result.put("streak", streak);
+        result.put("completedTodos", completedTodos);
+        result.put("daysWithActivity", daysWithActivity);
+
+        return result;
+    }
+
     private void updateDailyStats(Long userId, TimerRecord record) {
         LocalDate today = record.getStartedAt().toLocalDate();
         FocusStatistic stat = statisticRepository.findByUserIdAndStatDate(userId, today)

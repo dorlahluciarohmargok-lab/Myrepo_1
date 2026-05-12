@@ -36,13 +36,18 @@ CREATE TABLE IF NOT EXISTS todos (
     completed_at DATETIME COMMENT '完成时间',
     priority TINYINT NOT NULL DEFAULT 0 COMMENT '优先级: 0-普通, 1-重要, 2-紧急',
     sort_order INT NOT NULL DEFAULT 0 COMMENT '排序序号',
+    timer_mode VARCHAR(20) NOT NULL DEFAULT 'countdown' COMMENT '计时模式: countdown/stopwatch',
+    timer_duration INT NOT NULL DEFAULT 1500 COMMENT '设定计时时长(秒)',
+    timer_elapsed INT NOT NULL DEFAULT 0 COMMENT '已计时时长(秒)',
+    bg_index INT NOT NULL DEFAULT 0 COMMENT '背景图片索引(0-9)',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_user_id (user_id),
     INDEX idx_completed (completed),
     INDEX idx_due_date (due_date),
-    INDEX idx_user_completed (user_id, completed)
+    INDEX idx_user_completed (user_id, completed),
+    INDEX idx_timer_mode (timer_mode)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='待办事项表';
 
 -- ============================================

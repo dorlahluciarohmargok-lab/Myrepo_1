@@ -63,6 +63,10 @@ public class TodoService {
         todo.setPriority(request.getPriority() != null ? request.getPriority() : 0);
         todo.setSortOrder(0);
         todo.setCompleted(false);
+        todo.setTimerMode(request.getTimerMode() != null ? request.getTimerMode() : "countdown");
+        todo.setTimerDuration(request.getTimerDuration() != null ? request.getTimerDuration() : 1500);
+        todo.setTimerElapsed(0);
+        todo.setBgIndex(request.getBgIndex() != null ? request.getBgIndex() : 0);
 
         Todo saved = todoRepository.save(todo);
         clearCache(userId);
@@ -84,6 +88,15 @@ public class TodoService {
         todo.setDueDate(request.getDueDate());
         if (request.getPriority() != null) {
             todo.setPriority(request.getPriority());
+        }
+        if (request.getTimerMode() != null) {
+            todo.setTimerMode(request.getTimerMode());
+        }
+        if (request.getTimerDuration() != null) {
+            todo.setTimerDuration(request.getTimerDuration());
+        }
+        if (request.getBgIndex() != null) {
+            todo.setBgIndex(request.getBgIndex());
         }
 
         Todo saved = todoRepository.save(todo);
@@ -121,6 +134,21 @@ public class TodoService {
         clearCache(userId);
     }
 
+    @Transactional
+    public TodoDTO updateTimerElapsed(Long userId, Long todoId, Integer elapsed) {
+        Todo todo = todoRepository.findById(todoId)
+            .orElseThrow(() -> new RuntimeException("待办不存在"));
+
+        if (!todo.getUserId().equals(userId)) {
+            throw new RuntimeException("无权操作");
+        }
+
+        todo.setTimerElapsed(elapsed != null ? elapsed : 0);
+        Todo saved = todoRepository.save(todo);
+        clearCache(userId);
+        return toDTO(saved);
+    }
+
     private void clearCache(Long userId) {
         redisTemplate.delete(CACHE_PREFIX + userId);
     }
@@ -136,6 +164,10 @@ public class TodoService {
         dto.setCompletedAt(todo.getCompletedAt());
         dto.setPriority(todo.getPriority());
         dto.setSortOrder(todo.getSortOrder());
+        dto.setTimerMode(todo.getTimerMode());
+        dto.setTimerDuration(todo.getTimerDuration());
+        dto.setTimerElapsed(todo.getTimerElapsed());
+        dto.setBgIndex(todo.getBgIndex());
         dto.setCreatedAt(todo.getCreatedAt());
         return dto;
     }

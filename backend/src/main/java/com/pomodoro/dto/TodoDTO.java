@@ -16,5 +16,9 @@ public class TodoDTO {
     private LocalDateTime completedAt;
     private Integer priority;
     private Integer sortOrder;
+    private String timerMode;
+    private Integer timerDuration;
+    private Integer timerElapsed;
+    private Integer bgIndex;
     private LocalDateTime createdAt;
 }

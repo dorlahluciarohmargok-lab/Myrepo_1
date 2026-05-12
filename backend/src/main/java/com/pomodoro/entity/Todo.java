@@ -46,6 +46,18 @@ public class Todo {
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
+    @Column(name = "timer_mode", nullable = false, length = 20)
+    private String timerMode = "countdown";
+
+    @Column(name = "timer_duration", nullable = false)
+    private Integer timerDuration = 1500;
+
+    @Column(name = "timer_elapsed", nullable = false)
+    private Integer timerElapsed = 0;
+
+    @Column(name = "bg_index", nullable = false)
+    private Integer bgIndex = 0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
