@@ -1112,6 +1112,7 @@ function startCountdown() {
       if (Notification.permission === 'granted') {
         new Notification('🍅 番茄专注', { body: '专注时间结束！休息一下吧~' });
       }
+      saveTimerToServer('countdown', timerDuration, timerDuration, true);
       return;
     }
     updateTimerDisplay(timerRemaining);
@@ -1483,9 +1484,9 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-document.getElementById('todoAddBtn').addEventListener('click', addTodo);
+document.getElementById('todoAddBtn').addEventListener('click', addTodoWithSync);
 document.getElementById('todoTitleInput').addEventListener('keypress', e => {
-  if (e.key === 'Enter') addTodo();
+  if (e.key === 'Enter') addTodoWithSync();
 });
 
 function addTodo() {
@@ -1579,6 +1580,7 @@ document.getElementById('moodSelector').addEventListener('click', e => {
   const today = new Date().toISOString().split('T')[0];
   moodData[today] = mood;
   localStorage.setItem('pomodoro_moods', JSON.stringify(moodData));
+  if (authToken) apiRequest('POST', '/mood', { mood: mood, recordDate: today });
   document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
   option.classList.add('selected');
   renderMoodHistory();
@@ -1620,6 +1622,157 @@ function requestNotification() {
   }
 }
 
+// ========== API LAYER (前后端对接) ==========
+const API_BASE = 'http://localhost:9090/api';
+let authToken = localStorage.getItem('pomodoro_token') || '';
+
+async function apiRequest(method, path, body = null) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  
+  try {
+    const res = await fetch(API_BASE + path, {
+      method, headers,
+      body: body ? JSON.stringify(body) : null
+    });
+    const data = await res.json();
+    if (data.code === 200) return data.data;
+    console.warn('API Error:', data.message);
+    return null;
+  } catch (e) {
+    console.log('离线模式 - 使用本地存储');
+    return null;
+  }
+}
+
+// ========== AUTH (登录/注册) ==========
+async function autoAuth() {
+  if (authToken) {
+    const user = await apiRequest('GET', '/auth/me');
+    if (user) { console.log('已登录:', user.username); return; }
+  }
+  // 自动注册/登录一个匿名用户（基于设备ID）
+  const deviceId = localStorage.getItem('pomodoro_device_id') || ('user_' + Date.now());
+  localStorage.setItem('pomodoro_device_id', deviceId);
+  
+  let result = await apiRequest('POST', '/auth/login', { username: deviceId, password: deviceId + '123' });
+  if (!result) {
+    result = await apiRequest('POST', '/auth/register', { username: deviceId, password: deviceId + '123', nickname: '番茄用户' });
+  }
+  if (result && result.token) {
+    authToken = result.token;
+    localStorage.setItem('pomodoro_token', authToken);
+    console.log('自动登录成功');
+  }
+}
+
+// ========== SYNC TODOS (同步待办) ==========
+async function syncTodosToServer() {
+  if (!authToken) return;
+  const serverTodos = await apiRequest('GET', '/todos');
+  if (serverTodos && serverTodos.length > 0) {
+    // 合并：服务器数据优先
+    todos = serverTodos.map(t => ({
+      id: t.id,
+      title: t.title,
+      content: t.content || '',
+      dueTime: t.dueTime ? t.dueTime.substring(0, 5) : '',
+      completed: t.completed
+    }));
+    saveTodos();
+    renderTodos();
+  } else if (todos.length > 0) {
+    // 本地有数据但服务器没有，上传到服务器
+    for (const todo of todos) {
+      await apiRequest('POST', '/todos', {
+        title: todo.title || todo.text || '未命名',
+        content: todo.content || '',
+        dueTime: todo.dueTime || null,
+        priority: 0
+      });
+    }
+  }
+}
+
+// ========== SYNC MOOD (同步心情) ==========
+async function syncMoodToServer() {
+  if (!authToken) return;
+  const todayKey = new Date().toISOString().split('T')[0];
+  if (moodData[todayKey]) {
+    await apiRequest('POST', '/mood', { mood: moodData[todayKey], recordDate: todayKey });
+  }
+  // 获取服务器心情数据
+  const weekMoods = await apiRequest('GET', '/mood/week');
+  if (weekMoods) {
+    weekMoods.forEach(m => { moodData[m.recordDate] = m.mood; });
+    localStorage.setItem('pomodoro_moods', JSON.stringify(moodData));
+    renderMoodHistory();
+  }
+}
+
+// ========== ENHANCED TODO OPERATIONS (增强版：同时操作本地+服务器) ==========
+const originalAddTodo = addTodo;
+const originalSaveTodos = saveTodos;
+
+// 重写 addTodo 以同步到服务器
+const _origAddTodo = addTodo;
+function addTodoWithSync() {
+  const titleInput = document.getElementById('todoTitleInput');
+  const contentInput = document.getElementById('todoContentInput');
+  const timeInput = document.getElementById('todoTimeInput');
+  const title = titleInput.value.trim();
+  if (!title) return;
+  
+  const newTodo = {
+    id: Date.now(),
+    title: title,
+    content: contentInput.value || '',
+    dueTime: timeInput.value || '',
+    completed: false
+  };
+  todos.push(newTodo);
+  saveTodos();
+  renderTodos();
+  titleInput.value = '';
+  contentInput.value = '';
+  timeInput.value = '';
+  
+  // 异步同步到服务器
+  if (authToken) {
+    apiRequest('POST', '/todos', {
+      title: newTodo.title,
+      content: newTodo.content,
+      dueTime: newTodo.dueTime || null,
+      priority: 0
+    }).then(serverTodo => {
+      if (serverTodo) {
+        // 更新本地ID为服务器ID
+        const idx = todos.findIndex(t => t.id === newTodo.id);
+        if (idx >= 0) { todos[idx].id = serverTodo.id; saveTodos(); }
+      }
+    });
+  }
+}
+
+// 保存计时记录到服务器
+async function saveTimerToServer(mode, duration, actualDuration, completed) {
+  if (!authToken) return;
+  await apiRequest('POST', '/timer/record', {
+    timerMode: mode,
+    duration: duration,
+    actualDuration: actualDuration,
+    completed: completed,
+    startedAt: new Date().toISOString()
+  });
+}
+
+// ========== INIT WITH SYNC ==========
+async function initWithSync() {
+  await autoAuth();
+  await syncTodosToServer();
+  await syncMoodToServer();
+}
+
 // ========== INIT ==========
 function init() {
   updateDate();
@@ -1643,6 +1796,8 @@ function init() {
 }
 
 init();
+// 前后端同步初始化
+initWithSync().catch(e => console.log('离线模式运行'));
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
