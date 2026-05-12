@@ -283,6 +283,13 @@ body::before {
 }
 .todo-card-play-btn:hover { background: rgba(255,255,255,0.3); }
 .todo-card-play-btn.running { background: var(--primary); border-color: var(--primary); }
+.todo-card-reset-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.1); color: white; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+.todo-card-reset-btn:hover { background: rgba(255,255,255,0.3); border-color: white; }
 .todo-card-badges { display: flex; align-items: center; gap: 6px; }
 .todo-card-badge {
   padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;
@@ -651,6 +658,8 @@ document.querySelectorAll('.nav-item').forEach(item => {
     target.style.display = 'block';
     requestAnimationFrame(() => target.classList.add('active'));
     if (viewId === 'viewStats') renderStats();
+    // Re-render todos to restore timer display references (without stopping timers)
+    if (viewId === 'viewTodo') renderTodos();
   });
 });
 
@@ -917,6 +926,7 @@ function renderTodos() {
         <div class="todo-card-bottom">
           <div class="todo-card-timer">
             <button class="todo-card-play-btn ${isRunning ? 'running' : ''}" data-id="${todo.id}">${isRunning ? '⏸' : '▶'}</button>
+            <button class="todo-card-reset-btn" data-id="${todo.id}" title="归零">↺</button>
             <span class="todo-card-timer-display" data-id="${todo.id}">${timerDisplay}</span>
           </div>
           <div class="todo-card-badges">
@@ -938,6 +948,7 @@ document.getElementById('todoList').addEventListener('click', e => {
   const checkbox = e.target.closest('.todo-card-checkbox');
   const deleteBtn = e.target.closest('.todo-card-delete');
   const playBtn = e.target.closest('.todo-card-play-btn');
+  const resetBtn = e.target.closest('.todo-card-reset-btn');
 
   if (checkbox) {
     e.stopPropagation();
@@ -950,6 +961,22 @@ document.getElementById('todoList').addEventListener('click', e => {
     if (activeTodoTimerId === id) stopTodoTimer();
     todos = todos.filter(t => t.id !== id);
     saveTodos(); renderTodos();
+  } else if (resetBtn) {
+    e.stopPropagation();
+    const id = parseInt(resetBtn.dataset.id);
+    // Stop timer if running
+    if (activeTodoTimerId === id) {
+      stopTodoTimer();
+      activeTodoTimerId = null;
+    }
+    // Reset elapsed to 0
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+      todo.timerElapsed = 0;
+      todo.timerRunning = false;
+      saveTodos();
+      renderTodos();
+    }
   } else if (playBtn) {
     e.stopPropagation();
     const id = parseInt(playBtn.dataset.id);
@@ -1006,7 +1033,7 @@ function startTodoTimer(todoId) {
         recordSession(todo.timerDuration, 'countdown');
         return;
       }
-      // Update display
+      // Update display (even if view is hidden, element may exist)
       const el = document.querySelector(`.todo-card-timer-display[data-id="${todoId}"]`);
       if (el) el.textContent = formatTimerDisplay(remaining);
     } else {
