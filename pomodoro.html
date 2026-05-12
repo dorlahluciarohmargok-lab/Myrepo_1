@@ -653,6 +653,102 @@ body::before {
 }
 .whitelist-save-btn:active { transform: scale(0.95); }
 
+/* Completion Card Overlay */
+.completion-card-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  animation: completionFadeIn 0.5s ease;
+}
+@keyframes completionFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.completion-card {
+  position: relative;
+  width: 90%;
+  max-width: 360px;
+  height: 480px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.3);
+  animation: completionCardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes completionCardPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.completion-card-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+}
+.completion-card-overlay-dark {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%);
+}
+.completion-card-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+}
+.completion-card-icon {
+  font-size: 48px;
+  animation: completionBounce 1s ease infinite;
+}
+@keyframes completionBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.completion-card-title {
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.completion-card-duration {
+  color: white;
+  font-size: 16px;
+  opacity: 0.9;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.completion-card-quote {
+  color: white;
+  font-size: 18px;
+  font-style: italic;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 280px;
+  font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.completion-card-btn {
+  margin-top: 12px;
+  background: white;
+  color: var(--primary);
+  padding: 14px 36px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Noto Sans SC', sans-serif;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.completion-card-btn:active { transform: scale(0.95); }
+.completion-card-btn:hover { transform: scale(1.03); }
+
 @media (max-height: 700px) {
   .timer-circle-wrapper { width: 180px; height: 180px; }
   .timer-svg { width: 180px; height: 180px; }
@@ -826,6 +922,21 @@ body::before {
     </div>
   </div>
 
+  <!-- Completion Card Overlay -->
+  <div class="completion-card-overlay" id="completionCardOverlay" style="display:none;">
+    <div class="completion-card">
+      <div class="completion-card-bg" id="completionCardBg"></div>
+      <div class="completion-card-overlay-dark"></div>
+      <div class="completion-card-content">
+        <div class="completion-card-icon">🎉</div>
+        <div class="completion-card-title">完成！</div>
+        <div class="completion-card-duration" id="completionCardDuration">你专注了25分钟</div>
+        <div class="completion-card-quote" id="completionCardQuote">每一次专注，都是对自己最好的投资。</div>
+        <button class="completion-card-btn" id="completionCardBtn">太棒了 👏</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Bottom Navigation - 5 items -->
   <div class="bottom-nav" id="bottomNav">
     <div class="nav-item active" data-view="viewTimer"><span class="nav-icon">⏱️</span><span class="nav-label">专注</span></div>
@@ -900,6 +1011,56 @@ let todoTimerInterval = null;
 let activeTodoTimerId = null;
 let bgIndexCounter = parseInt(localStorage.getItem('pomodoro_bg_counter') || '0');
 
+// ========== COMPLETION CARD DATA ==========
+const COMPLETION_BG_IMAGES = [
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1465056836900-8f1e8e4e0520?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1504567961542-e24d9439a724?w=600&h=900&fit=crop',
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&h=900&fit=crop'
+];
+
+const COMPLETION_QUOTES = [
+  '每一次专注，都是对自己最好的投资。',
+  '坚持的力量，比你想象的更强大。',
+  '今天的努力，是明天的底气。',
+  '你比昨天的自己更优秀了。',
+  '专注是通往卓越的唯一道路。',
+  '时间不会辜负每一个认真的人。',
+  '又完成了一次挑战，为自己骄傲！',
+  '滴水穿石，非一日之功。',
+  '你的坚持终将发光。',
+  '把每一分钟都活成想要的样子。',
+  '优秀是一种习惯，你正在养成它。',
+  '现在流的汗，是未来闪的光。',
+  '每完成一次，就离目标更近一步。',
+  '自律即自由，你做到了！',
+  '成长就是一点一滴的积累。',
+  '你的努力，值得被看见。',
+  '静下心来，世界就会为你让路。',
+  '今日事今日毕，你很棒！',
+  '专注当下，未来可期。',
+  '每一秒的坚持都有意义。'
+];
+
+let completionCardIndex = parseInt(localStorage.getItem('pomodoro_completion_card_index') || '0');
+let completionCardAutoDismissTimer = null;
+
 // ========== FOCUS MODE STATE ==========
 let focusMode = localStorage.getItem('pomodoro_focus_mode') || 'normal'; // normal, focus, general
 let focusModeActive = false; // Whether a focus/general session is currently running
@@ -953,6 +1114,62 @@ function escapeHtml(text) {
 }
 
 function getTodayKey() { return new Date().toISOString().split('T')[0]; }
+
+// ========== COMPLETION CARD FUNCTIONS ==========
+function showCompletionCard(durationSeconds) {
+  // Get the next card index (cycle through 20, never repeat until all used)
+  const bgIndex = completionCardIndex % 20;
+  const quoteIndex = completionCardIndex % 20;
+  completionCardIndex++;
+  localStorage.setItem('pomodoro_completion_card_index', completionCardIndex.toString());
+
+  // Set background image
+  const bgEl = document.getElementById('completionCardBg');
+  bgEl.style.backgroundImage = `url('${COMPLETION_BG_IMAGES[bgIndex]}')`;
+
+  // Set quote
+  document.getElementById('completionCardQuote').textContent = COMPLETION_QUOTES[quoteIndex];
+
+  // Set duration text
+  const minutes = Math.floor(durationSeconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const remainingMins = minutes % 60;
+  let durationText = '';
+  if (hours > 0 && remainingMins > 0) {
+    durationText = `你专注了${hours}小时${remainingMins}分钟`;
+  } else if (hours > 0) {
+    durationText = `你专注了${hours}小时`;
+  } else {
+    durationText = `你专注了${minutes}分钟`;
+  }
+  document.getElementById('completionCardDuration').textContent = durationText;
+
+  // Show overlay
+  const overlay = document.getElementById('completionCardOverlay');
+  overlay.style.display = 'flex';
+
+  // Auto-dismiss after 10 seconds
+  if (completionCardAutoDismissTimer) clearTimeout(completionCardAutoDismissTimer);
+  completionCardAutoDismissTimer = setTimeout(() => {
+    dismissCompletionCard();
+  }, 10000);
+}
+
+function dismissCompletionCard() {
+  const overlay = document.getElementById('completionCardOverlay');
+  overlay.style.display = 'none';
+  if (completionCardAutoDismissTimer) {
+    clearTimeout(completionCardAutoDismissTimer);
+    completionCardAutoDismissTimer = null;
+  }
+}
+
+// Completion card dismiss button handler
+document.getElementById('completionCardBtn').addEventListener('click', dismissCompletionCard);
+// Also dismiss by clicking on the overlay background
+document.getElementById('completionCardOverlay').addEventListener('click', function(e) {
+  if (e.target === this) dismissCompletionCard();
+});
 </script>
 
 <script>
@@ -1362,6 +1579,8 @@ function startCountdown() {
       // Exit focus/general mode
       if (focusMode === 'focus' && focusModeActive) exitFocusMode(true);
       else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
+      // Show completion card
+      showCompletionCard(timerDuration);
       return;
     }
     updateTimerDisplay(timerRemaining);
@@ -1663,6 +1882,8 @@ function startTodoTimer(todoId) {
         // Exit focus/general mode
         if (focusMode === 'focus' && focusModeActive) exitFocusMode(true);
         else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
+        // Show completion card
+        showCompletionCard(todo.timerDuration);
         return;
       }
       // Update display
