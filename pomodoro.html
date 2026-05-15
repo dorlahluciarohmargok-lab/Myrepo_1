@@ -441,12 +441,22 @@ body::before {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 9999;
-  background: rgba(20, 20, 30, 0.95);
-  backdrop-filter: blur(20px);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #1a1a2e;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: focusFadeIn 0.5s ease;
+  transition: background-image 1s ease;
+}
+.focus-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
 }
 @keyframes focusFadeIn { from { opacity: 0; } to { opacity: 1; } }
 .focus-overlay-content {
@@ -455,6 +465,8 @@ body::before {
   align-items: center;
   gap: 16px;
   text-align: center;
+  position: relative;
+  z-index: 2;
 }
 .focus-overlay-emoji { font-size: 64px; animation: focusPulse 2s ease-in-out infinite; }
 @keyframes focusPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
@@ -470,11 +482,24 @@ body::before {
   color: white;
   font-family: 'Nunito', sans-serif;
   letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.focus-overlay-quote {
+  font-size: 16px;
+  color: rgba(255,255,255,0.9);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-style: italic;
+  max-width: 280px;
+  line-height: 1.6;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  margin-top: 8px;
+  transition: opacity 0.5s ease;
 }
 .focus-overlay-hint {
   font-size: 14px;
   color: rgba(255,255,255,0.6);
   font-family: 'Noto Sans SC', sans-serif;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .focus-give-up-btn {
   margin-top: 40px;
@@ -967,7 +992,7 @@ body::before {
       <div class="focus-overlay-emoji">🍅</div>
       <div class="focus-overlay-title">专注中</div>
       <div class="focus-overlay-timer" id="focusOverlayTimer">25:00</div>
-      <div class="focus-overlay-hint">请保持专注，不要离开</div>
+      <div class="focus-overlay-quote" id="focusOverlayQuote"></div>
       <button class="focus-give-up-btn" id="focusGiveUpBtn"><span class="give-up-progress"></span>长按3秒放弃专注</button>
     </div>
   </div>
@@ -1136,6 +1161,222 @@ const COMPLETION_QUOTES = [
 let completionCardIndex = parseInt(localStorage.getItem('pomodoro_completion_card_index') || '0');
 let completionCardAutoDismissTimer = null;
 
+// ========== FOCUS MODE WALLPAPERS (100 images from Unsplash) ==========
+const FOCUS_BG_IMAGES = [
+  // Nature landscapes (20)
+  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1465795174442-3e7edb8f7b50?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1439853949127-fa647821eba0?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1504567961542-e24d9439a724?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1540206395-68808572332f?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1470770841497-7b3200c10fa0?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1497449493169-bcc170dc7356?w=1080&h=1920&fit=crop',
+  // Space & stars (20)
+  'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1520034475321-cbe63696469a?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1464802686167-b939a6910659?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1517483000871-1dbf64a6e1c6?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1509773896068-7fd415d91e2e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1536431311719-398b6704d4cc?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1484589065579-248aad0d628b?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1504333638930-c8787321eee0?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1475274047050-1d0c55b0033f?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1532798442725-41036acc7489?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1579003593419-98f949b9398f?w=1080&h=1920&fit=crop',
+  // City & architecture (20)
+  'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1470219556762-1fd5b5f14e62?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1502899576159-f224dc2349fa?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1490644658840-3f2e3f8c5625?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1520483601560-389dff434fdf?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1496568816309-51d7c20e3b21?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1546436836-07a91091f160?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1532236204992-f5e85c024202?w=1080&h=1920&fit=crop',
+  // Flowers & plants (20)
+  'https://images.unsplash.com/photo-1490750967868-88aa4f44f45a?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1462275646964-a0e3c91d588f?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1490750967868-88aa4f44f45a?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1501004318776-cd7fab5ae430?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1457530378978-8bac673b8062?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1429684311553-6c5f3e2e1d25?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1518882853776-f046a85a5b65?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1505673542670-a5e3ff5b14a3?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1511516412960-8a9f75f602c0?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1510093551714-b8a80cba3afe?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1468327768560-75b778cbb551?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1503149779833-1de50ebe5f8a?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1495231916356-a86217efff12?w=1080&h=1920&fit=crop',
+  // Abstract & gradients (20)
+  'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1557683316-973673baf926?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1567095761054-7a02e69e5b2b?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1558470598-a5dda9640f68?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1604076913837-52ab5f6b9f18?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1557682268-e3955ed5d83f?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1557683311-eac922347aa1?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1614850715649-1d0106568def?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1618556450994-a163b4549a53?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1080&h=1920&fit=crop',
+  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1080&h=1920&fit=crop'
+];
+
+// ========== FOCUS MODE QUOTES (100 motivational quotes) ==========
+const FOCUS_QUOTES = [
+  // Chinese classical quotes (30)
+  '大鹏一日同风起，扶摇直上九万里。',
+  '会当凌绝顶，一览众山小。',
+  '沉舟侧畔千帆过，病树前头万木春。',
+  '千磨万击还坚劲，任尔东西南北风。',
+  '落红不是无情物，化作春泥更护花。',
+  '生当作人杰，死亦为鬼雄。',
+  '古之立大事者，不惟有超世之才，亦必有坚忍不拔之志。',
+  '先天下之忧而忧，后天下之乐而乐。',
+  '老骥伏枥，志在千里；烈士暮年，壮心不已。',
+  '人生自古谁无死，留取丹心照汗青。',
+  '风声雨声读书声，声声入耳。',
+  '非学无以广才，非志无以成学。',
+  '不畏浮云遮望眼，自缘身在最高层。',
+  '欲穷千里目，更上一层楼。',
+  '苟利国家生死以，岂因祸福避趋之。',
+  '位卑未敢忘忧国。',
+  '天生我材必有用，千金散尽还复来。',
+  '仰天大笑出门去，我辈岂是蓬蒿人。',
+  '安得广厦千万间，大庇天下寒士俱欢颜。',
+  '山重水复疑无路，柳暗花明又一村。',
+  '读书破万卷，下笔如有神。',
+  '问渠那得清如许，为有源头活水来。',
+  '江山代有才人出，各领风骚数百年。',
+  '青山遮不住，毕竟东流去。',
+  '疾风知劲草，板荡识诚臣。',
+  '粉身碎骨浑不怕，要留清白在人间。',
+  '咬定青山不放松，立根原在破岩中。',
+  '横看成岭侧成峰，远近高低各不同。',
+  '宝剑锋从磨砺出，梅花香自苦寒来。',
+  '三军可夺帅也，匹夫不可夺志也。',
+  // Modern motivational quotes (30)
+  '把每一天当作生命的最后一天来过，你会发现无限可能。',
+  '不是因为看到希望才坚持，而是坚持了才看到希望。',
+  '你现在的努力，是未来的你会感谢的礼物。',
+  '成长从来不是一蹴而就的，它需要日复一日的坚持。',
+  '真正的强大，是在无人鼓掌时仍然奔跑。',
+  '你不必完美，但你必须真实且努力。',
+  '每一次跌倒，都是为了更有力量地站起来。',
+  '今天的汗水，是明天的勋章。',
+  '当你觉得最困难的时候，往往是你最接近成功的时候。',
+  '没有人能替你走完这段路，但终点的风景值得一切。',
+  '与其羡慕别人的成功，不如专注于自己的脚下。',
+  '所有看起来的轻松，背后都有不为人知的付出。',
+  '保持热爱，奔赴山海。',
+  '你的潜力远超你的想象，别急着给自己设限。',
+  '一个人走得慢没关系，重要的是不停下来。',
+  '困难是暂时的，放弃是永久的。',
+  '每一次选择坚持，都是在向更好的自己靠近。',
+  '不要害怕失败，害怕的应该是从未尝试。',
+  '时间会证明你所有的坚持都有意义。',
+  '哪有什么一夜成名，其实都是百炼成钢。',
+  '把目标刻在钻石上，把计划写在沙滩上。',
+  '优秀是一种习惯，而非一次行为。',
+  '世界上最快的捷径，就是脚踏实地。',
+  '别让今天的懈怠成为明天的遗憾。',
+  '你所浪费的今天，是昨天逝去之人奢望的明天。',
+  '星光不问赶路人，时光不负有心人。',
+  '凡是过往，皆为序章。',
+  '越努力，越幸运。',
+  '种一棵树最好的时间是十年前，其次是现在。',
+  '向前走，不必回头，因为前方有更好的风景。',
+  // Inspirational creative quotes from stories (40)
+  '黑夜给了我黑色的眼睛，我却用它寻找光明。',
+  '在最深的绝望里，遇见最美丽的风景。',
+  '勇气不是没有恐惧，而是带着恐惧依然前行。',
+  '每一朵花都有盛开的理由，每一个人都有闪光的时刻。',
+  '即使翅膀折断了，心也要飞翔。',
+  '星星发光是为了让每个人有一天都能找到属于自己的星星。',
+  '只要你还愿意站起来，世界就不曾真正打败你。',
+  '暴风雨过后，总会有彩虹；长夜之后，必有黎明。',
+  '真正的旅行不在于到达目的地，而在于沿途的风景。',
+  '当你仰望星空时，星空也在注视着你。',
+  '生命中每一段弯路，都是通往美好的必经之路。',
+  '你无法控制风向，但你可以调整帆的方向。',
+  '在这个世界上，没有任何力量能够阻挡一颗坚定的心。',
+  '时间不会等任何人，但它会奖励那些珍惜它的人。',
+  '不是每一次努力都有结果，但每一次结果都需要努力。',
+  '你今天站立的位置，是别人梦寐以求的远方。',
+  '最暗的夜，才能看见最美的星辰。',
+  '生活不是等待暴风雨过去，而是学会在雨中起舞。',
+  '世界那么大，你的野心也应该如此。',
+  '如果你不出去走走，你会以为这就是全世界。',
+  '梦想不会逃跑，逃跑的只有你自己。',
+  '人生没有白走的路，每一步都算数。',
+  '你必须非常努力，才能看起来毫不费力。',
+  '生命是一场孤独的旅行，但沿途并不孤独。',
+  '永远不要因为走得太远，而忘记为什么出发。',
+  '所有伟大的事情，都始于一个微小的开始。',
+  '你的故事才刚刚开始，最好的篇章还在后面。',
+  '即使很慢，只要不停下来，就是进步。',
+  '没有比脚更长的路，没有比人更高的山。',
+  '把脸朝向阳光，那么阴影就在你身后。',
+  '困难像弹簧，你弱它就强，你强它就弱。',
+  '每一滴汗水都不会白流，它们在为你铺就前方的路。',
+  '你不是在浪费时间寻找答案，你是在积累给出答案的智慧。',
+  '命运给你一个低起点，是希望你演绎一个逆袭的故事。',
+  '所谓万丈深渊，走下去也是前程万里。',
+  '没有翻不过的山，只有不想翻的心。',
+  '与其在黑暗中抱怨，不如点亮自己这盏灯。',
+  '这个世界不会辜负每一份努力和坚持。',
+  '你可以不伟大，但你不能没有梦想。',
+  '再长的路，一步步也能走完；再短的路，不迈出脚就无法到达。'
+];
+
 // ========== FOCUS MODE STATE ==========
 let focusMode = localStorage.getItem('pomodoro_focus_mode') || 'normal'; // normal, focus, general
 let focusModeActive = false; // Whether a focus/general session is currently running
@@ -1145,6 +1386,7 @@ let giveUpProgressInterval = null;
 let focusAlarmAudio = null;
 let visibilityHandler = null;
 let beforeUnloadHandler = null;
+let focusBgInterval = null;
 
 // ========== DOM ELEMENTS ==========
 const progressCircle = document.getElementById('progressCircle');
@@ -1283,10 +1525,31 @@ document.getElementById('whitelistSaveBtn').addEventListener('click', () => {
 });
 
 // ========== FOCUS MODE: Enter/Exit ==========
+function updateFocusBgAndQuote() {
+  const overlay = document.getElementById('focusOverlay');
+  const quoteEl = document.getElementById('focusOverlayQuote');
+  const randomImg = FOCUS_BG_IMAGES[Math.floor(Math.random() * FOCUS_BG_IMAGES.length)];
+  const randomQuote = FOCUS_QUOTES[Math.floor(Math.random() * FOCUS_QUOTES.length)];
+  overlay.style.backgroundImage = 'url(' + randomImg + ')';
+  if (quoteEl) {
+    quoteEl.style.opacity = '0';
+    setTimeout(() => {
+      quoteEl.textContent = randomQuote;
+      quoteEl.style.opacity = '1';
+    }, 300);
+  }
+}
+
 function enterFocusMode() {
   focusModeActive = true;
   const overlay = document.getElementById('focusOverlay');
   overlay.style.display = 'flex';
+  
+  // Set initial wallpaper and quote
+  updateFocusBgAndQuote();
+  
+  // Start interval to change wallpaper and quote every 30s
+  focusBgInterval = setInterval(updateFocusBgAndQuote, 30000);
   
   // Hide bottom nav
   document.getElementById('bottomNav').style.display = 'none';
@@ -1328,7 +1591,14 @@ function exitFocusMode(completed) {
   focusModeActive = false;
   const overlay = document.getElementById('focusOverlay');
   overlay.style.display = 'none';
+  overlay.style.backgroundImage = '';
   document.getElementById('focusWarningOverlay').style.display = 'none';
+  
+  // Clear wallpaper interval
+  if (focusBgInterval) {
+    clearInterval(focusBgInterval);
+    focusBgInterval = null;
+  }
   
   // Show bottom nav
   document.getElementById('bottomNav').style.display = 'flex';
