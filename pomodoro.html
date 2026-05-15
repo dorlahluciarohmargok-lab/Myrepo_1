@@ -762,6 +762,13 @@ body::before {
   white-space: nowrap; flex-shrink: 0;
 }
 .wallpaper-category-tab.active { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
+.wallpaper-random-btn {
+  padding: 8px 16px; border: 1.5px solid #ff6b35; border-radius: 20px;
+  font-size: 13px; font-family: 'Noto Sans SC', sans-serif; cursor: pointer;
+  background: linear-gradient(135deg, #ff6b35, #f7c948); color: #fff; transition: all 0.2s;
+  white-space: nowrap; flex-shrink: 0; font-weight: 600;
+}
+.wallpaper-random-btn:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(255,107,53,0.4); }
 .wallpaper-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .wallpaper-item {
   aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; cursor: pointer;
@@ -945,6 +952,7 @@ body::before {
           <button class="wallpaper-category-tab" data-category="ANIMAL">动物</button>
           <button class="wallpaper-category-tab" data-category="PLANT">植物</button>
           <button class="wallpaper-category-tab" data-category="OTHER">其他</button>
+          <button class="wallpaper-random-btn" id="wallpaperRandomBtn" title="随机壁纸">🎲 随机</button>
         </div>
         <div class="wallpaper-section-title" id="wallpaperSectionTitle">内置壁纸</div>
         <div class="wallpaper-grid" id="wallpaperGrid"></div>
@@ -2247,6 +2255,8 @@ function migrateTodos() {
 }
 
 // ========== WALLPAPER FUNCTIONS ==========
+let allDefaultWallpapers = null; // 缓存所有内嵌壁纸数据
+
 async function fetchBuiltinWallpapers(category = 'all') {
   try {
     let url = API_BASE + '/wallpapers/builtin';
@@ -2258,18 +2268,129 @@ async function fetchBuiltinWallpapers(category = 'all') {
     if (result.code === 200) {
       builtinWallpapers = result.data;
       renderBuiltinWallpapers();
+      return;
     }
   } catch (e) {
     console.error('Failed to fetch wallpapers:', e);
-    // 如果后端不可用，使用默认壁纸
-    builtinWallpapers = getDefaultWallpapers();
-    renderBuiltinWallpapers();
   }
+  // 后端不可用时，使用内嵌的默认壁纸数据并支持分类筛选
+  if (!allDefaultWallpapers) {
+    allDefaultWallpapers = getDefaultWallpapers();
+  }
+  if (category === 'all') {
+    builtinWallpapers = allDefaultWallpapers;
+  } else {
+    builtinWallpapers = allDefaultWallpapers.filter(wp => wp.category === category);
+  }
+  renderBuiltinWallpapers();
 }
 
 function getDefaultWallpapers() {
-  // 返回一些默认壁纸作为降级方案
-  return [];
+  return [
+    {id:1,name:"阿尔卑斯山",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=600&fit=crop"},
+    {id:2,name:"晨曦森林",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&h=600&fit=crop"},
+    {id:3,name:"湖光山色",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=600&fit=crop"},
+    {id:4,name:"秋日森林",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=600&fit=crop"},
+    {id:5,name:"山谷晨雾",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=400&h=600&fit=crop"},
+    {id:6,name:"草原日落",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400&h=600&fit=crop"},
+    {id:7,name:"瀑布彩虹",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=400&h=600&fit=crop"},
+    {id:8,name:"沙漠日出",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop"},
+    {id:9,name:"雪山湖泊",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5?w=400&h=600&fit=crop"},
+    {id:10,name:"森林小径",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?w=400&h=600&fit=crop"},
+    {id:11,name:"海岸线",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=400&h=600&fit=crop"},
+    {id:12,name:"山峰云海",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&h=600&fit=crop"},
+    {id:13,name:"峡谷风光",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=400&h=600&fit=crop"},
+    {id:14,name:"森林溪流",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=400&h=600&fit=crop"},
+    {id:15,name:"高山草甸",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=400&h=600&fit=crop"},
+    {id:16,name:"雪山日落",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&h=600&fit=crop"},
+    {id:17,name:"田园风光",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&h=600&fit=crop"},
+    {id:18,name:"湖泊倒影",category:"LANDSCAPE",imageUrl:"https://images.unsplash.com/photo-1470073521593-9c5a73a65f6d?w=400&h=600&fit=crop"},
+    {id:19,name:"暴风雨",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=400&h=600&fit=crop"},
+    {id:20,name:"彩虹",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1493319297120-27441f4e851b?w=400&h=600&fit=crop"},
+    {id:21,name:"晴天",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=400&h=600&fit=crop"},
+    {id:22,name:"多云",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1496450681664-3df85efbd29f?w=400&h=600&fit=crop"},
+    {id:23,name:"日出",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1532355771-8d7c6e6e6e0e?w=400&h=600&fit=crop"},
+    {id:24,name:"雾气",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=400&h=600&fit=crop"},
+    {id:25,name:"雨天",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400&h=600&fit=crop"},
+    {id:26,name:"雷电",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1558401082-2266d403574f?w=400&h=600&fit=crop"},
+    {id:27,name:"雪花",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1603204077167-2fa0397f6e90?w=400&h=600&fit=crop"},
+    {id:28,name:"晚霞",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1592218015278-d5f4b9e8d5c7?w=400&h=600&fit=crop"},
+    {id:29,name:"阴天",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1487621167305-5d248087c724?w=400&h=600&fit=crop"},
+    {id:30,name:"夕阳",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?w=400&h=600&fit=crop"},
+    {id:31,name:"晨雾",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1517299321609-52687d1bc55a?w=400&h=600&fit=crop"},
+    {id:32,name:"彩虹天空",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1475661622903-cc8231d67f86?w=400&h=600&fit=crop"},
+    {id:33,name:"云海",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=400&h=600&fit=crop"},
+    {id:34,name:"雾凇",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?w=400&h=600&fit=crop"},
+    {id:35,name:"雨后彩虹",category:"WEATHER",imageUrl:"https://images.unsplash.com/photo-1525279009886-c35f63ffb67f?w=400&h=600&fit=crop"},
+    {id:36,name:"现代建筑",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&h=600&fit=crop"},
+    {id:37,name:"摩天大楼",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1448630360428-65456885c650?w=400&h=600&fit=crop"},
+    {id:38,name:"古典建筑",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=400&h=600&fit=crop"},
+    {id:39,name:"桥梁",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1478860409698-8707f313ee8b?w=400&h=600&fit=crop"},
+    {id:40,name:"宫殿",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=400&h=600&fit=crop"},
+    {id:41,name:"教堂",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1466978913421-dad2ebd01d1a?w=400&h=600&fit=crop"},
+    {id:42,name:"城市夜景",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1475758643861-466131d56f80?w=400&h=600&fit=crop"},
+    {id:43,name:"高楼林立",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&h=600&fit=crop"},
+    {id:44,name:"古代城墙",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1494145904049-0dca59b4bbad?w=400&h=600&fit=crop"},
+    {id:45,name:"现代艺术馆",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=600&fit=crop"},
+    {id:46,name:"火车站",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1494526585095-c41746248156?w=400&h=600&fit=crop"},
+    {id:47,name:"灯塔",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1449158743715-0a90ebb695e7?w=400&h=600&fit=crop"},
+    {id:48,name:"城堡",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1470342495391-7f544f60a5d6?w=400&h=600&fit=crop"},
+    {id:49,name:"城市天际线",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=400&h=600&fit=crop"},
+    {id:50,name:"古村落",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1444608799193-2fac853f096d?w=400&h=600&fit=crop"},
+    {id:51,name:"风车",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1445141917658-7f370a38c31f?w=400&h=600&fit=crop"},
+    {id:52,name:"玻璃幕墙",category:"ARCHITECTURE",imageUrl:"https://images.unsplash.com/photo-1431576901776-e539bd916ba2?w=400&h=600&fit=crop"},
+    {id:53,name:"北极熊",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400&h=600&fit=crop"},
+    {id:54,name:"猫咪",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400&h=600&fit=crop"},
+    {id:55,name:"小狗",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=400&h=600&fit=crop"},
+    {id:56,name:"海豚",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=400&h=600&fit=crop"},
+    {id:57,name:"孔雀",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1517152037974-e8091a2a3c2b?w=400&h=600&fit=crop"},
+    {id:58,name:"蝴蝶",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1459262838948-3e2de6c1ec80?w=400&h=600&fit=crop"},
+    {id:59,name:"海龟",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1551316679-9c6ae9dec224?w=400&h=600&fit=crop"},
+    {id:60,name:"大象",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1484406566174-9da000fda645?w=400&h=600&fit=crop"},
+    {id:61,name:"狐狸",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=600&fit=crop"},
+    {id:62,name:"鹦鹉",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=400&h=600&fit=crop"},
+    {id:63,name:"松鼠",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=400&h=600&fit=crop"},
+    {id:64,name:"鲸鱼",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=400&h=600&fit=crop"},
+    {id:65,name:"蜜蜂",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&h=600&fit=crop"},
+    {id:66,name:"企鹅",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1590158462298-75860e229a79?w=400&h=600&fit=crop"},
+    {id:67,name:"老虎",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1562039145-7b3cd84b234e?w=400&h=600&fit=crop"},
+    {id:68,name:"兔子",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1474314170901-f351b68f544f?w=400&h=600&fit=crop"},
+    {id:69,name:"熊猫",category:"ANIMAL",imageUrl:"https://images.unsplash.com/photo-1558788353-f76d92427f16?w=400&h=600&fit=crop"},
+    {id:70,name:"玫瑰",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&h=600&fit=crop"},
+    {id:71,name:"向日葵",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1462275646964-a0e3571f4f47?w=400&h=600&fit=crop"},
+    {id:72,name:"郁金香",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&h=600&fit=crop"},
+    {id:73,name:"樱花",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400&h=600&fit=crop"},
+    {id:74,name:"森林",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=600&fit=crop"},
+    {id:75,name:"绿植",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1501973931609-ce48f6d77ef2?w=400&h=600&fit=crop"},
+    {id:76,name:"薰衣草",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1509223197845-458d87a6c1a4?w=400&h=600&fit=crop"},
+    {id:77,name:"牡丹",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1497882596502-0c8bc5f7a6b2?w=400&h=600&fit=crop"},
+    {id:78,name:"竹林",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1444021465936-c6ca81d39b84?w=400&h=600&fit=crop"},
+    {id:79,name:"多肉植物",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=400&h=600&fit=crop"},
+    {id:80,name:"荷花",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=400&h=600&fit=crop"},
+    {id:81,name:"枫叶",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1517320964272-a0024d2459bf?w=400&h=600&fit=crop"},
+    {id:82,name:"蒲公英",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=400&h=600&fit=crop"},
+    {id:83,name:"雏菊",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1470058869958-2a77ade41c02?w=400&h=600&fit=crop"},
+    {id:84,name:"蒲公英田野",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1470753937643-efeb931202a9?w=400&h=600&fit=crop"},
+    {id:85,name:"绿草地",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1442507216796-617e7a5b6dab?w=400&h=600&fit=crop"},
+    {id:86,name:"水仙花",category:"PLANT",imageUrl:"https://images.unsplash.com/photo-1491147334573-44cbb4602074?w=400&h=600&fit=crop"},
+    {id:87,name:"抽象艺术",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop"},
+    {id:88,name:"几何图案",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=400&h=600&fit=crop"},
+    {id:89,name:"渐变色彩",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1520034475321-cbe63696469a?w=400&h=600&fit=crop"},
+    {id:90,name:"星空",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?w=400&h=600&fit=crop"},
+    {id:91,name:"极光",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=400&h=600&fit=crop"},
+    {id:92,name:"宇宙",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1557683316-973673bdar37?w=400&h=600&fit=crop"},
+    {id:93,name:"银河",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400&h=600&fit=crop"},
+    {id:94,name:"抽象几何",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=400&h=600&fit=crop"},
+    {id:95,name:"霓虹灯",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1508615070457-7baeba4003ab?w=400&h=600&fit=crop"},
+    {id:96,name:"抽象线条",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&h=600&fit=crop"},
+    {id:97,name:"彩虹渐变",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=600&fit=crop"},
+    {id:98,name:"光影",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=600&fit=crop"},
+    {id:99,name:"星空银河",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=400&h=600&fit=crop"},
+    {id:100,name:"彩虹光",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=400&h=600&fit=crop"},
+    {id:101,name:"宇宙星空",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?w=400&h=600&fit=crop"},
+    {id:102,name:"彩色光晕",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=600&fit=crop"},
+    {id:103,name:"星星闪烁",category:"OTHER",imageUrl:"https://images.unsplash.com/photo-1604076913837-52ab5629fba9?w=400&h=600&fit=crop"}
+  ];
 }
 
 function renderBuiltinWallpapers() {
@@ -2389,6 +2510,16 @@ async function deleteWallpaper(id) {
   }
 }
 
+function applyRandomWallpaper() {
+  const allWallpapers = allDefaultWallpapers || getDefaultWallpapers();
+  if (allWallpapers.length === 0) return;
+  const randomIndex = Math.floor(Math.random() * allWallpapers.length);
+  const randomWp = allWallpapers[randomIndex];
+  applyWallpaper(randomWp, null);
+  // 更新壁纸网格中的选中状态
+  document.querySelectorAll('.wallpaper-item').forEach(item => item.classList.remove('selected'));
+}
+
 function initWallpaperView() {
   fetchBuiltinWallpapers();
   fetchUserWallpapers();
@@ -2401,6 +2532,12 @@ function initWallpaperView() {
       fetchBuiltinWallpapers(tab.dataset.category);
     });
   });
+  
+  // 随机壁纸按钮
+  const randomBtn = document.getElementById('wallpaperRandomBtn');
+  if (randomBtn) {
+    randomBtn.addEventListener('click', applyRandomWallpaper);
+  }
   
   // 上传区域
   const uploadZone = document.getElementById('wallpaperUploadZone');
