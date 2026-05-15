@@ -194,45 +194,6 @@ body::before {
 .todo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .todo-title { font-size: 20px; font-weight: 700; }
 .todo-count { font-size: 12px; color: var(--text-secondary); background: var(--secondary); padding: 4px 10px; border-radius: 12px; }
-.todo-add-form {
-  display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
-  background: var(--card-bg); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow);
-}
-.todo-add-form-row { display: flex; gap: 8px; align-items: center; }
-.todo-add-form-row2 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.todo-title-input {
-  flex: 1; padding: 10px 14px; border: 1.5px solid var(--secondary); border-radius: 12px;
-  font-size: 14px; font-family: 'Noto Sans SC', sans-serif; outline: none; background: var(--card-bg);
-}
-.todo-title-input:focus { border-color: var(--primary); }
-.todo-content-input {
-  width: 100%; padding: 10px 14px; border: 1.5px solid var(--secondary); border-radius: 12px;
-  font-size: 13px; font-family: 'Noto Sans SC', sans-serif; outline: none; background: var(--card-bg);
-  resize: vertical; min-height: 50px; line-height: 1.5;
-}
-.todo-content-input:focus { border-color: var(--primary); }
-.todo-time-input {
-  width: 90px; padding: 10px; border: 1.5px solid var(--secondary); border-radius: 12px;
-  font-size: 13px; font-family: 'Nunito', sans-serif; outline: none; background: var(--card-bg); text-align: center;
-}
-.todo-time-input:focus { border-color: var(--primary); }
-.todo-timer-mode-select {
-  padding: 8px 12px; border: 1.5px solid var(--secondary); border-radius: 12px;
-  font-size: 12px; font-family: 'Noto Sans SC', sans-serif; outline: none; background: var(--card-bg);
-  color: var(--text-primary); cursor: pointer;
-}
-.todo-timer-mode-select:focus { border-color: var(--primary); }
-.todo-timer-duration-input {
-  width: 70px; padding: 8px 10px; border: 1.5px solid var(--secondary); border-radius: 12px;
-  font-size: 12px; font-family: 'Nunito', sans-serif; outline: none; background: var(--card-bg); text-align: center;
-}
-.todo-timer-duration-input:focus { border-color: var(--primary); }
-.todo-add-btn {
-  width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary); color: white;
-  font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 3px 12px rgba(255,99,71,0.3); transition: transform 0.2s; flex-shrink: 0;
-}
-.todo-add-btn:active { transform: scale(0.9); }
 .todo-card-grid { display: flex; flex-direction: column; gap: 14px; }
 .todo-card {
   position: relative; height: 120px; border-radius: 16px; overflow: hidden;
@@ -266,6 +227,7 @@ body::before {
   color: white; font-size: 16px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
   flex: 1; line-height: 1.3; word-break: break-word;
 }
+.todo-card.completed { filter: brightness(0.7) saturate(0.5); }
 .todo-card.completed .todo-card-title { text-decoration: line-through; opacity: 0.7; }
 .todo-card-bottom { display: flex; align-items: center; justify-content: space-between; }
 .todo-card-timer {
@@ -307,6 +269,72 @@ body::before {
   opacity: 0; transition: opacity 0.2s; backdrop-filter: blur(4px);
 }
 .todo-card:hover .todo-card-delete { opacity: 1; }
+
+/* Todo Add Button (top-right circle) */
+.todo-add-circle-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: var(--primary); color: white; font-size: 20px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 12px rgba(255,99,71,0.3); transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+.todo-add-circle-btn:active { transform: scale(0.9); }
+.todo-add-circle-btn:hover { box-shadow: 0 4px 16px rgba(255,99,71,0.4); }
+
+/* Todo Create Overlay */
+.todo-create-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;
+  background: white; display: none; flex-direction: column;
+  max-width: 430px; margin: 0 auto;
+}
+.todo-create-overlay.active { display: flex; }
+.todo-create-overlay-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid #f0f0f0;
+}
+.todo-create-back-btn {
+  background: none; border: none; font-size: 15px; color: var(--text-secondary);
+  cursor: pointer; padding: 8px 12px; border-radius: 8px; font-family: 'Noto Sans SC', sans-serif;
+}
+.todo-create-back-btn:active { background: #f5f5f5; }
+.todo-create-save-btn {
+  background: var(--primary); border: none; color: white; font-size: 14px; font-weight: 600;
+  padding: 8px 20px; border-radius: 20px; cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
+  box-shadow: 0 2px 8px rgba(255,99,71,0.3);
+}
+.todo-create-save-btn:active { transform: scale(0.95); }
+.todo-create-body {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.todo-create-title-input {
+  width: 100%; padding: 14px 0; border: none; border-bottom: 2px solid #f0f0f0;
+  font-size: 22px; font-weight: 700; font-family: 'Noto Sans SC', sans-serif;
+  outline: none; color: var(--text-primary); background: transparent;
+}
+.todo-create-title-input:focus { border-bottom-color: var(--primary); }
+.todo-create-title-input::placeholder { color: #ccc; }
+.todo-create-meta-row {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.todo-create-meta-row input,
+.todo-create-meta-row select {
+  padding: 10px 14px; border: 1.5px solid #eee; border-radius: 12px;
+  font-size: 13px; font-family: 'Noto Sans SC', sans-serif; outline: none;
+  background: #fafafa; color: var(--text-primary);
+}
+.todo-create-meta-row input:focus,
+.todo-create-meta-row select:focus { border-color: var(--primary); background: white; }
+.todo-create-meta-row .time-input { width: 100px; text-align: center; }
+.todo-create-meta-row .duration-input { width: 80px; text-align: center; }
+.todo-create-content-input {
+  flex: 1; min-height: 200px; width: 100%; padding: 14px; border: 1.5px solid #eee;
+  border-radius: 14px; font-size: 14px; font-family: 'Noto Sans SC', sans-serif;
+  outline: none; background: #fafafa; color: var(--text-primary);
+  resize: none; line-height: 1.7;
+}
+.todo-create-content-input:focus { border-color: var(--primary); background: white; }
+.todo-create-content-input::placeholder { color: #bbb; }
 </style>
 
 <style>
@@ -884,22 +912,10 @@ body::before {
       <div class="todo-section">
         <div class="todo-header">
           <div class="todo-title">待办事项</div>
-          <div class="todo-count" id="todoCount">0 项</div>
-        </div>
-        <div class="todo-add-form">
-          <div class="todo-add-form-row">
-            <input type="text" class="todo-title-input" id="todoTitleInput" placeholder="任务标题...">
-            <button class="todo-add-btn" id="todoAddBtn">+</button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="todo-count" id="todoCount">0 项</div>
+            <button class="todo-add-circle-btn" id="todoAddCircleBtn">+</button>
           </div>
-          <div class="todo-add-form-row2">
-            <input type="time" class="todo-time-input" id="todoTimeInput">
-            <select class="todo-timer-mode-select" id="todoTimerModeSelect">
-              <option value="countdown">倒计时</option>
-              <option value="stopwatch">正计时</option>
-            </select>
-            <input type="number" class="todo-timer-duration-input" id="todoTimerDurationInput" placeholder="分钟" min="1" value="25">
-          </div>
-          <textarea class="todo-content-input" id="todoContentInput" rows="2" placeholder="支持 Markdown 语法..."></textarea>
         </div>
         <div class="todo-card-grid" id="todoList"></div>
       </div>
@@ -1042,6 +1058,26 @@ body::before {
     <div class="nav-item" data-view="viewStats"><span class="nav-icon">📊</span><span class="nav-label">统计</span></div>
     <div class="nav-item" data-view="viewMood"><span class="nav-icon">😊</span><span class="nav-label">心情</span></div>
     <div class="nav-item" data-view="viewWallpaper"><span class="nav-icon">🖼️</span><span class="nav-label">壁纸</span></div>
+  </div>
+</div>
+
+<!-- Todo Create Overlay -->
+<div class="todo-create-overlay" id="todoCreateOverlay">
+  <div class="todo-create-overlay-header">
+    <button class="todo-create-back-btn" id="todoCreateBackBtn">< 返回</button>
+    <button class="todo-create-save-btn" id="todoCreateSaveBtn">保存</button>
+  </div>
+  <div class="todo-create-body">
+    <input type="text" class="todo-create-title-input" id="todoCreateTitle" placeholder="任务标题...">
+    <div class="todo-create-meta-row">
+      <input type="time" class="time-input" id="todoCreateTime">
+      <select id="todoCreateMode">
+        <option value="countdown">倒计时</option>
+        <option value="stopwatch">正计时</option>
+      </select>
+      <input type="number" class="duration-input" id="todoCreateDuration" placeholder="分钟" min="1" value="25">
+    </div>
+    <textarea class="todo-create-content-input" id="todoCreateContent" placeholder="支持 Markdown 语法..."></textarea>
   </div>
 </div>
 
@@ -2068,7 +2104,13 @@ function renderTodos() {
   const now = new Date();
   const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
-  todos.forEach((todo, i) => {
+  // Sort: incomplete first, completed last
+  const sortedTodos = [...todos].sort((a, b) => {
+    if (a.completed === b.completed) return 0;
+    return a.completed ? 1 : -1;
+  });
+
+  sortedTodos.forEach((todo, i) => {
     const title = todo.title || todo.text || '未命名任务';
     const dueTime = todo.dueTime || '';
     const bgIdx = (todo.bgIndex !== undefined) ? todo.bgIndex : (i % BG_IMAGES.length);
@@ -2259,22 +2301,30 @@ function stopTodoTimer() {
   if (todoTimerInterval) { clearInterval(todoTimerInterval); todoTimerInterval = null; }
 }
 
-// ========== ADD TODO ==========
-document.getElementById('todoAddBtn').addEventListener('click', addTodoWithSync);
-document.getElementById('todoTitleInput').addEventListener('keypress', e => { if (e.key === 'Enter') addTodoWithSync(); });
+// ========== ADD TODO (Overlay) ==========
+document.getElementById('todoAddCircleBtn').addEventListener('click', function() {
+  document.getElementById('todoCreateOverlay').classList.add('active');
+  document.getElementById('todoCreateTitle').focus();
+});
 
-// Show/hide duration input based on timer mode
-document.getElementById('todoTimerModeSelect').addEventListener('change', function() {
-  const durInput = document.getElementById('todoTimerDurationInput');
+document.getElementById('todoCreateBackBtn').addEventListener('click', function() {
+  document.getElementById('todoCreateOverlay').classList.remove('active');
+});
+
+// Show/hide duration input based on timer mode in create overlay
+document.getElementById('todoCreateMode').addEventListener('change', function() {
+  const durInput = document.getElementById('todoCreateDuration');
   durInput.style.display = this.value === 'countdown' ? 'block' : 'none';
 });
 
-function addTodoWithSync() {
-  const titleInput = document.getElementById('todoTitleInput');
-  const contentInput = document.getElementById('todoContentInput');
-  const timeInput = document.getElementById('todoTimeInput');
-  const modeSelect = document.getElementById('todoTimerModeSelect');
-  const durationInput = document.getElementById('todoTimerDurationInput');
+document.getElementById('todoCreateSaveBtn').addEventListener('click', addTodoFromOverlay);
+
+function addTodoFromOverlay() {
+  const titleInput = document.getElementById('todoCreateTitle');
+  const contentInput = document.getElementById('todoCreateContent');
+  const timeInput = document.getElementById('todoCreateTime');
+  const modeSelect = document.getElementById('todoCreateMode');
+  const durationInput = document.getElementById('todoCreateDuration');
   const title = titleInput.value.trim();
   if (!title) return;
 
@@ -2298,10 +2348,17 @@ function addTodoWithSync() {
 
   todos.push(newTodo);
   saveTodos(); renderTodos();
+
+  // Reset form
   titleInput.value = '';
   contentInput.value = '';
   timeInput.value = '';
   durationInput.value = '25';
+  modeSelect.value = 'countdown';
+  durationInput.style.display = 'block';
+
+  // Close overlay
+  document.getElementById('todoCreateOverlay').classList.remove('active');
 
   // Sync to server
   if (authToken) {
