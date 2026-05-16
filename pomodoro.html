@@ -854,6 +854,64 @@ body::before {
   .timer-svg { width: 180px; height: 180px; }
   .timer-time { font-size: 34px; }
 }
+
+/* Mode-specific overlay tints */
+.focus-overlay.mode-normal::before { background: rgba(0,0,0,0.3); }
+.focus-overlay.mode-general::before { background: rgba(20,10,0,0.35); }
+.focus-overlay.mode-focus::before { background: rgba(0,0,0,0.5); }
+
+/* Overlay action buttons */
+.overlay-action-btns {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: -16px;
+}
+.overlay-pause-btn, .overlay-end-btn {
+  padding: 10px 22px;
+  border-radius: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Noto Sans SC', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1.5px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.12);
+  color: white;
+  backdrop-filter: blur(6px);
+}
+.overlay-pause-btn:hover, .overlay-end-btn:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: white;
+}
+
+/* Confirm dialogs */
+.confirm-dialog {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10001;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+}
+.confirm-dialog-content {
+  background: white; border-radius: 20px; padding: 32px 28px;
+  text-align: center; max-width: 300px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.confirm-dialog-emoji { font-size: 48px; margin-bottom: 12px; }
+.confirm-dialog-title { font-size: 18px; font-weight: 700; color: #2C3E50; margin-bottom: 8px; }
+.confirm-dialog-text { font-size: 13px; color: #7F8C8D; margin-bottom: 24px; line-height: 1.6; }
+.confirm-dialog-btns { display: flex; gap: 12px; }
+.confirm-btn-cancel {
+  flex: 1; padding: 12px; border: 1.5px solid #FF6347; border-radius: 12px;
+  background: white; color: #FF6347; font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.confirm-btn-ok {
+  flex: 1; padding: 12px; border: none; border-radius: 12px;
+  background: #FF6347; color: white; font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
 </style>
 
 </head>
@@ -1005,13 +1063,17 @@ body::before {
       </div>
     </div>
   </div>
-  <!-- Focus Mode Overlay -->
+  <!-- Focus Mode Overlay (shared by all 3 modes) -->
   <div class="focus-overlay" id="focusOverlay" style="display:none;">
     <div class="focus-overlay-content">
-      <div class="focus-overlay-emoji">🍅</div>
-      <div class="focus-overlay-title">专注中</div>
+      <div class="focus-overlay-emoji" id="focusOverlayEmoji">🍅</div>
+      <div class="focus-overlay-title" id="focusOverlayTitle">专注中</div>
       <div class="focus-overlay-timer" id="focusOverlayTimer">25:00</div>
       <div class="focus-overlay-quote" id="focusOverlayQuote"></div>
+      <div class="overlay-action-btns" id="overlayActionBtns">
+        <button class="overlay-pause-btn" id="overlayPauseBtn">⏸ 暂停</button>
+        <button class="overlay-end-btn" id="overlayEndBtn">⏹ 结束</button>
+      </div>
       <button class="focus-give-up-btn" id="focusGiveUpBtn"><span class="give-up-progress"></span>长按3秒放弃专注</button>
     </div>
   </div>
@@ -1047,6 +1109,32 @@ body::before {
         <div class="completion-card-duration" id="completionCardDuration">你专注了25分钟</div>
         <div class="completion-card-quote" id="completionCardQuote">每一次专注，都是对自己最好的投资。</div>
         <button class="completion-card-btn" id="completionCardBtn">太棒了 👏</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Pause Dialog (focus mode) -->
+  <div class="confirm-dialog" id="confirmPauseDialog" style="display:none;">
+    <div class="confirm-dialog-content">
+      <div class="confirm-dialog-emoji">⚠️</div>
+      <div class="confirm-dialog-title">确定要暂停吗？</div>
+      <div class="confirm-dialog-text">专注模式下暂停会打断你的心流状态，坚持住！</div>
+      <div class="confirm-dialog-btns">
+        <button class="confirm-btn-cancel" id="confirmPauseCancel">继续专注</button>
+        <button class="confirm-btn-ok" id="confirmPauseOk">确定暂停</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm End Dialog (general mode) -->
+  <div class="confirm-dialog" id="confirmEndDialog" style="display:none;">
+    <div class="confirm-dialog-content">
+      <div class="confirm-dialog-emoji">🤔</div>
+      <div class="confirm-dialog-title">时间还没到哦</div>
+      <div class="confirm-dialog-text">坚持完成会更有成就感，确定要提前结束吗？</div>
+      <div class="confirm-dialog-btns">
+        <button class="confirm-btn-cancel" id="confirmEndCancel">继续坚持</button>
+        <button class="confirm-btn-ok" id="confirmEndOk">确定结束</button>
       </div>
     </div>
   </div>
@@ -1306,7 +1394,31 @@ const FOCUS_BG_IMAGES = [
   'https://images.unsplash.com/photo-1618556450994-a163b4549a53?w=1080&h=2400&fit=crop',
   'https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=1080&h=2400&fit=crop',
   'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1080&h=2400&fit=crop',
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1080&h=2400&fit=crop'
+  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1080&h=2400&fit=crop',
+  // 城市雨夜 (5)
+  'https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1519692933481-e162a57d6721?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1080&h=2400&fit=crop',
+  // 极地冰川 (5)
+  'https://images.unsplash.com/photo-1520769945061-0a448c463865?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1547234935-80c7145ec969?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1504214208698-ea446addccc0?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1467803738586-46b7eb7b16a1?w=1080&h=2400&fit=crop',
+  // 热带雨林 (5)
+  'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1567037756904-24d7ee36b0c8?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1080&h=2400&fit=crop',
+  // 沙漠星空 (5)
+  'https://images.unsplash.com/photo-1509773896068-7fd415d91e2e?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1504333638930-c8787321eee0?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1532798442725-41036acc7489?w=1080&h=2400&fit=crop',
+  'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1080&h=2400&fit=crop'
 ];
 
 // ========== FOCUS MODE QUOTES (100 motivational quotes) ==========
@@ -1413,7 +1525,62 @@ const FOCUS_QUOTES = [
   '与其在黑暗中抱怨，不如点亮自己这盏灯。',
   '这个世界不会辜负每一份努力和坚持。',
   '你可以不伟大，但你不能没有梦想。',
-  '再长的路，一步步也能走完；再短的路，不迈出脚就无法到达。'
+  '再长的路，一步步也能走完；再短的路，不迈出脚就无法到达。',
+  // 时间管理 (10)
+  '时间是最公平的资源，每个人每天都有24小时。',
+  '把时间花在哪里，人生就长在哪里。',
+  '专注一件事，胜过同时做十件事。',
+  '与其抱怨时间不够，不如减少无意义的消耗。',
+  '每天进步1%，一年后你会强大37倍。',
+  '碎片化时间积累起来，也能成就不凡。',
+  '时间管理的本质，是自我管理。',
+  '早一分钟开始，就少一分钟后悔。',
+  '做好时间的主人，而不是时间的奴隶。',
+  '把精力投入最重要的事，其余一切自然就绪。',
+  // 坚持 (10)
+  '坚持不一定成功，但放弃一定失败。',
+  '世界上最难的事，是每天都做同一件正确的事。',
+  '苦难是人生最好的老师，坚持是最贵的品质。',
+  '每一次想放弃的时候，都是距离成功最近的时刻。',
+  '不要在最难熬的时候，做最容易后悔的决定。',
+  '你的坚持，会给未来的自己一个交代。',
+  '熬过了最难的那段时光，你就赢了。',
+  '成功者不是没有遇到过困难，而是选择了继续前行。',
+  '把每一次挑战都当作一次成长的机会。',
+  '雨后总有彩虹，黑暗之后必现光明。',
+  // 当下 (10)
+  '过去无法改变，未来尚未到来，当下才是你真正拥有的。',
+  '活在当下，是对生命最大的尊重。',
+  '此刻的专注，是最高效的投资。',
+  '不要用昨天的担忧消耗今天的能量。',
+  '把心安放在此时此刻，一切便已足够。',
+  '当你全身心投入当下，时间自然会厚待你。',
+  '别让未来的焦虑，偷走了现在的快乐。',
+  '此刻你所做的，正在塑造未来的你。',
+  '专注眼前，放下杂念，心静自然来。',
+  '每一个当下，都是你人生最年轻的时刻。',
+  // 成长 (10)
+  '成长，就是不断突破自己的舒适区。',
+  '你今天的努力，是明天成长的土壤。',
+  '学习是一辈子的事，停止学习就停止了成长。',
+  '每一次失败都是一次珍贵的反馈，而非终结。',
+  '成长的路上没有捷径，唯有脚踏实地。',
+  '今天的自律，是明天自由的基础。',
+  '比昨天更好一点，就是进步。',
+  '成长不是一瞬间的顿悟，而是日复一日的积累。',
+  '你所经历的每一次挣扎，都在让你变得更强大。',
+  '接受不完美的自己，然后努力成为更好的自己。',
+  // 梦想 (10)
+  '梦想，是人生旅途最亮的那盏灯。',
+  '有梦想的人，睡着了也在微笑。',
+  '不要因为走得太慢而沮丧，怕的是你站着不动。',
+  '梦想不怕遥远，只怕你不出发。',
+  '把梦想写下来，每天靠近它一步。',
+  '世界上所有美好的事物，都始于一个大胆的梦想。',
+  '追梦的路上，你不是一个人在战斗。',
+  '梦想有多大，舞台就有多大。',
+  '不要嘲笑任何人的梦想，因为那是别人的全部。',
+  '只要你还在追梦，你就永远年轻。'
 ];
 
 // ========== FOCUS MODE STATE ==========
@@ -1581,18 +1748,19 @@ function updateFocusBgAndQuote() {
 
 function enterFocusMode() {
   focusModeActive = true;
+  configureOverlayForMode('focus');
   const overlay = document.getElementById('focusOverlay');
   overlay.style.display = 'flex';
-  
+
   // Set initial wallpaper and quote
   updateFocusBgAndQuote();
-  
+
   // Start interval to change wallpaper and quote every 30s
   focusBgInterval = setInterval(updateFocusBgAndQuote, 30000);
-  
+
   // Hide bottom nav
   document.getElementById('bottomNav').style.display = 'none';
-  
+
   // Enter fullscreen
   try {
     if (document.documentElement.requestFullscreen) {
@@ -1601,7 +1769,7 @@ function enterFocusMode() {
       document.documentElement.webkitRequestFullscreen();
     }
   } catch(e) {}
-  
+
   // Add beforeunload warning
   beforeUnloadHandler = function(e) {
     e.preventDefault();
@@ -1609,19 +1777,17 @@ function enterFocusMode() {
     return e.returnValue;
   };
   window.addEventListener('beforeunload', beforeUnloadHandler);
-  
+
   // Add visibility change handler for focus mode
   visibilityHandler = function() {
     if (document.hidden && focusModeActive && focusMode === 'focus') {
-      // User left the page - play alarm when they come back
       playFocusAlarm();
     } else if (!document.hidden && focusModeActive && focusMode === 'focus') {
-      // User came back - show warning overlay
       document.getElementById('focusWarningOverlay').style.display = 'flex';
     }
   };
   document.addEventListener('visibilitychange', visibilityHandler);
-  
+
   // Update overlay timer
   updateFocusOverlayTimer();
 }
@@ -1631,17 +1797,18 @@ function exitFocusMode(completed) {
   const overlay = document.getElementById('focusOverlay');
   overlay.style.display = 'none';
   overlay.style.backgroundImage = '';
+  overlay.classList.remove('mode-normal', 'mode-general', 'mode-focus');
   document.getElementById('focusWarningOverlay').style.display = 'none';
-  
+
   // Clear wallpaper interval
   if (focusBgInterval) {
     clearInterval(focusBgInterval);
     focusBgInterval = null;
   }
-  
+
   // Show bottom nav
   document.getElementById('bottomNav').style.display = 'flex';
-  
+
   // Exit fullscreen
   try {
     if (document.fullscreenElement) {
@@ -1650,7 +1817,7 @@ function exitFocusMode(completed) {
       document.webkitExitFullscreen();
     }
   } catch(e) {}
-  
+
   // Remove event listeners
   if (beforeUnloadHandler) {
     window.removeEventListener('beforeunload', beforeUnloadHandler);
@@ -1660,10 +1827,10 @@ function exitFocusMode(completed) {
     document.removeEventListener('visibilitychange', visibilityHandler);
     visibilityHandler = null;
   }
-  
+
   // Stop alarm
   stopFocusAlarm();
-  
+
   // Celebrate if completed
   if (completed) {
     showFocusCompleteCelebration();
@@ -1672,7 +1839,12 @@ function exitFocusMode(completed) {
 
 function enterGeneralMode() {
   focusModeActive = true;
-  
+  configureOverlayForMode('general');
+  const overlay = document.getElementById('focusOverlay');
+  overlay.style.display = 'flex';
+  updateFocusBgAndQuote();
+  document.getElementById('bottomNav').style.display = 'none';
+
   // Add beforeunload gentle warning
   beforeUnloadHandler = function(e) {
     e.preventDefault();
@@ -1680,35 +1852,86 @@ function enterGeneralMode() {
     return e.returnValue;
   };
   window.addEventListener('beforeunload', beforeUnloadHandler);
-  
+
   // Add visibility change handler for general mode
   visibilityHandler = function() {
     if (!document.hidden && focusModeActive && focusMode === 'general') {
-      // User came back - show gentle reminder
       document.getElementById('generalReminderOverlay').style.display = 'flex';
     }
   };
   document.addEventListener('visibilitychange', visibilityHandler);
+
+  updateFocusOverlayTimer();
 }
 
 function exitGeneralMode() {
   focusModeActive = false;
+  const overlay = document.getElementById('focusOverlay');
+  overlay.style.display = 'none';
+  overlay.style.backgroundImage = '';
+  overlay.classList.remove('mode-normal', 'mode-general', 'mode-focus');
   document.getElementById('generalReminderOverlay').style.display = 'none';
-  
-  // Remove event listeners
-  if (beforeUnloadHandler) {
-    window.removeEventListener('beforeunload', beforeUnloadHandler);
-    beforeUnloadHandler = null;
-  }
-  if (visibilityHandler) {
-    document.removeEventListener('visibilitychange', visibilityHandler);
-    visibilityHandler = null;
+  if (focusBgInterval) { clearInterval(focusBgInterval); focusBgInterval = null; }
+  document.getElementById('bottomNav').style.display = 'flex';
+  if (beforeUnloadHandler) { window.removeEventListener('beforeunload', beforeUnloadHandler); beforeUnloadHandler = null; }
+  if (visibilityHandler) { document.removeEventListener('visibilitychange', visibilityHandler); visibilityHandler = null; }
+}
+
+function enterNormalMode() {
+  focusModeActive = true;
+  configureOverlayForMode('normal');
+  const overlay = document.getElementById('focusOverlay');
+  overlay.style.display = 'flex';
+  updateFocusBgAndQuote();
+  document.getElementById('bottomNav').style.display = 'none';
+  updateFocusOverlayTimer();
+}
+
+function exitNormalMode() {
+  focusModeActive = false;
+  const overlay = document.getElementById('focusOverlay');
+  overlay.style.display = 'none';
+  overlay.style.backgroundImage = '';
+  overlay.classList.remove('mode-normal', 'mode-general', 'mode-focus');
+  if (focusBgInterval) { clearInterval(focusBgInterval); focusBgInterval = null; }
+  document.getElementById('bottomNav').style.display = 'flex';
+}
+
+function configureOverlayForMode(mode) {
+  const overlay = document.getElementById('focusOverlay');
+  overlay.classList.remove('mode-normal', 'mode-general', 'mode-focus');
+  overlay.classList.add('mode-' + mode);
+
+  const emojiEl = document.getElementById('focusOverlayEmoji');
+  const titleEl = document.getElementById('focusOverlayTitle');
+  const actionBtns = document.getElementById('overlayActionBtns');
+  const giveUpBtn = document.getElementById('focusGiveUpBtn');
+  const endBtn = document.getElementById('overlayEndBtn');
+
+  if (mode === 'normal') {
+    if (emojiEl) emojiEl.textContent = '⏱️';
+    if (titleEl) titleEl.textContent = '计时中';
+    if (actionBtns) actionBtns.style.display = 'flex';
+    if (endBtn) endBtn.style.display = 'inline-block';
+    if (giveUpBtn) giveUpBtn.style.display = 'none';
+  } else if (mode === 'general') {
+    if (emojiEl) emojiEl.textContent = '🎯';
+    if (titleEl) titleEl.textContent = '专注中';
+    if (actionBtns) actionBtns.style.display = 'flex';
+    if (endBtn) endBtn.style.display = 'inline-block';
+    if (giveUpBtn) giveUpBtn.style.display = 'none';
+  } else if (mode === 'focus') {
+    if (emojiEl) emojiEl.textContent = '🍅';
+    if (titleEl) titleEl.textContent = '专注中';
+    if (actionBtns) actionBtns.style.display = 'flex';
+    if (endBtn) endBtn.style.display = 'none';
+    if (giveUpBtn) giveUpBtn.style.display = 'block';
   }
 }
 
 // ========== FOCUS MODE: Overlay Timer Update ==========
 function updateFocusOverlayTimer() {
-  if (!focusModeActive || focusMode !== 'focus') return;
+  if (!focusModeActive) return;
   const overlayTimer = document.getElementById('focusOverlayTimer');
   if (timerMode === 'countdown') {
     overlayTimer.textContent = formatTimerDisplay(timerRemaining);
@@ -1791,6 +2014,45 @@ giveUpBtn.addEventListener('mouseleave', endGiveUp);
 giveUpBtn.addEventListener('touchstart', startGiveUp);
 giveUpBtn.addEventListener('touchend', endGiveUp);
 giveUpBtn.addEventListener('touchcancel', endGiveUp);
+
+// ========== OVERLAY ACTION BUTTONS ==========
+document.getElementById('overlayPauseBtn').addEventListener('click', () => {
+  if (focusMode === 'normal') { pauseTimer(); exitNormalMode(); }
+  else if (focusMode === 'general') { pauseTimer(); exitGeneralMode(); }
+  else if (focusMode === 'focus') { document.getElementById('confirmPauseDialog').style.display = 'flex'; }
+});
+
+document.getElementById('overlayEndBtn').addEventListener('click', () => {
+  if (focusMode === 'normal') {
+    stopTimer(); timerState = 'stopped'; btnStartPause.textContent = '\u25B6';
+    if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
+    else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
+    exitNormalMode();
+  } else if (focusMode === 'general') {
+    document.getElementById('confirmEndDialog').style.display = 'flex';
+  }
+});
+
+document.getElementById('confirmPauseCancel').addEventListener('click', () => {
+  document.getElementById('confirmPauseDialog').style.display = 'none';
+});
+document.getElementById('confirmPauseOk').addEventListener('click', () => {
+  document.getElementById('confirmPauseDialog').style.display = 'none';
+  pauseTimer();
+  exitFocusMode(false);
+  btnStartPause.style.display = 'flex';
+  btnReset.style.display = 'flex';
+});
+document.getElementById('confirmEndCancel').addEventListener('click', () => {
+  document.getElementById('confirmEndDialog').style.display = 'none';
+});
+document.getElementById('confirmEndOk').addEventListener('click', () => {
+  document.getElementById('confirmEndDialog').style.display = 'none';
+  stopTimer(); timerState = 'stopped'; btnStartPause.textContent = '\u25B6';
+  if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
+  else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
+  exitGeneralMode();
+});
 
 // ========== FOCUS MODE: Warning Button ==========
 document.getElementById('focusWarningBtn').addEventListener('click', () => {
@@ -1936,7 +2198,7 @@ btnReset.addEventListener('click', () => {
 function startCountdown() {
   timerState = 'running';
   btnStartPause.textContent = '\u23F8';
-  
+
   // Apply focus mode behaviors
   if (focusMode === 'focus' && !focusModeActive) {
     enterFocusMode();
@@ -1944,8 +2206,10 @@ function startCountdown() {
     btnReset.style.display = 'none'; // Hide reset button
   } else if (focusMode === 'general' && !focusModeActive) {
     enterGeneralMode();
+  } else if (focusMode === 'normal' && !focusModeActive) {
+    enterNormalMode();
   }
-  
+
   timerInterval = setInterval(() => {
     timerRemaining--;
     if (timerRemaining <= 0) {
@@ -1960,9 +2224,10 @@ function startCountdown() {
       if (Notification.permission === 'granted') new Notification('🍅 番茄专注', { body: '专注时间结束！休息一下吧~' });
       recordSession(timerDuration, 'countdown');
       saveTimerToServer('countdown', timerDuration, timerDuration, true);
-      // Exit focus/general mode
+      // Exit focus/general/normal mode
       if (focusMode === 'focus' && focusModeActive) exitFocusMode(true);
       else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
+      else if (focusMode === 'normal' && focusModeActive) exitNormalMode();
       // Show completion card
       showCompletionCard(timerDuration);
       return;
@@ -1970,14 +2235,14 @@ function startCountdown() {
     updateTimerDisplay(timerRemaining);
     updateProgress(timerRemaining / timerDuration);
     // Update focus overlay timer
-    if (focusModeActive && focusMode === 'focus') updateFocusOverlayTimer();
+    if (focusModeActive) updateFocusOverlayTimer();
   }, 1000);
 }
 
 function startStopwatch() {
   timerState = 'running';
   btnStartPause.textContent = '\u23F8';
-  
+
   // Apply focus mode behaviors
   if (focusMode === 'focus' && !focusModeActive) {
     enterFocusMode();
@@ -1985,14 +2250,16 @@ function startStopwatch() {
     btnReset.style.display = 'none'; // Hide reset button
   } else if (focusMode === 'general' && !focusModeActive) {
     enterGeneralMode();
+  } else if (focusMode === 'normal' && !focusModeActive) {
+    enterNormalMode();
   }
-  
+
   timerInterval = setInterval(() => {
     stopwatchElapsed++;
     updateTimerDisplay(stopwatchElapsed);
     updateProgress((stopwatchElapsed % 3600) / 3600);
     // Update focus overlay timer
-    if (focusModeActive && focusMode === 'focus') updateFocusOverlayTimer();
+    if (focusModeActive) updateFocusOverlayTimer();
   }, 1000);
 }
 
