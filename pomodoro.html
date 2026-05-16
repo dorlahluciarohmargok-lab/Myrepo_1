@@ -2749,6 +2749,9 @@ function saveTodos() { localStorage.setItem('pomodoro_todos', JSON.stringify(tod
 
 <script>
 // ========== RICH TEXT EDITOR CONTENT HELPER ==========
+// This function is for future use when a todo detail view is added.
+// It detects whether stored content is HTML (rich text) or legacy plain text
+// and renders accordingly for backwards compatibility.
 function renderTodoContent(content) {
   if (!content) return '';
   if (/<[a-z][\s\S]*>/i.test(content)) return content;
@@ -3405,6 +3408,17 @@ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').
     input.onchange = function() {
       const file = this.files[0];
       if (!file) return;
+      // Image size limit: 2MB
+      if (file.size > 2 * 1024 * 1024) {
+        alert('图片大小不能超过2MB');
+        return;
+      }
+      // Image count limit: max 5 images
+      var existingImages = editor.querySelectorAll('img');
+      if (existingImages.length >= 5) {
+        alert('最多只能插入5张图片');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = function(ev) {
         document.execCommand('insertHTML', false, '<img src="' + ev.target.result + '" style="max-width:100%;border-radius:8px;margin:8px 0;">');
@@ -3457,7 +3471,7 @@ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').
     if (!document.activeElement || document.activeElement !== editor) return;
     toolbar.querySelectorAll('.rich-editor-btn[data-cmd]').forEach(btn => {
       const cmd = btn.dataset.cmd;
-      if (['bold', 'italic', 'underline', 'strikeThrough'].includes(cmd)) {
+      if (['bold', 'italic', 'underline', 'strikeThrough', 'justifyLeft', 'justifyCenter', 'justifyRight', 'insertOrderedList', 'insertUnorderedList'].includes(cmd)) {
         btn.classList.toggle('active', document.queryCommandState(cmd));
       }
     });
