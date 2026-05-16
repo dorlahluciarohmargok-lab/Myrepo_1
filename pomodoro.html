@@ -335,6 +335,80 @@ body::before {
 }
 .todo-create-content-input:focus { border-color: var(--primary); background: white; }
 .todo-create-content-input::placeholder { color: #bbb; }
+
+/* Rich Text Editor */
+.rich-editor-toolbar {
+  display: flex; overflow-x: auto; gap: 4px; padding: 8px 4px;
+  border-bottom: 1px solid #f0f0f0; background: white;
+  position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+}
+.rich-editor-toolbar::-webkit-scrollbar { display: none; }
+.rich-editor-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: none;
+  background: transparent; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.2s;
+}
+.rich-editor-btn:hover { background: #f0f0f0; }
+.rich-editor-btn.active { background: var(--primary); color: white; }
+.rich-editor-content {
+  min-height: 200px; flex: 1; width: 100%; padding: 14px;
+  border: 1.5px solid #eee; border-radius: 14px; font-size: 14px;
+  font-family: 'Noto Sans SC', sans-serif; outline: none;
+  background: #fafafa; line-height: 1.7; overflow-y: auto;
+  color: var(--text-primary);
+}
+.rich-editor-content:focus { border-color: var(--primary); background: white; }
+.rich-editor-content:empty:before {
+  content: attr(data-placeholder); color: #bbb; pointer-events: none;
+}
+.rich-editor-separator {
+  width: 1px; height: 20px; background: #e0e0e0; margin: 0 4px;
+  flex-shrink: 0; align-self: center;
+}
+.rich-editor-dropdown {
+  position: absolute; background: white; border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12); padding: 8px;
+  z-index: 100; display: none;
+}
+.rich-editor-dropdown.show { display: block; }
+.rich-editor-dropdown-item {
+  padding: 8px 16px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+}
+.rich-editor-dropdown-item:hover { background: #f5f5f5; }
+.rich-editor-color-picker {
+  position: absolute; display: none; grid-template-columns: repeat(4, 1fr);
+  gap: 6px; background: white; padding: 10px; border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12); z-index: 100;
+}
+.rich-editor-color-picker.show { display: grid; }
+.rich-editor-color-dot {
+  width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: border-color 0.2s;
+}
+.rich-editor-color-dot:hover { border-color: #333; }
+.rich-editor-content img {
+  max-width: 100%; border-radius: 8px; margin: 8px 0; cursor: pointer;
+}
+.rich-editor-img-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10001; background: rgba(0,0,0,0.9);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column;
+}
+.rich-editor-img-overlay.show { display: flex; }
+.rich-editor-img-overlay img {
+  max-width: 90%; max-height: 80vh; border-radius: 8px;
+}
+.rich-editor-img-overlay .close-btn {
+  position: absolute; top: 20px; right: 20px; color: white;
+  font-size: 32px; cursor: pointer; background: none; border: none;
+}
+.rich-editor-img-overlay .delete-btn {
+  margin-top: 16px; padding: 10px 24px; background: #e74c3c;
+  color: white; border: none; border-radius: 8px; cursor: pointer;
+  font-size: 14px;
+}
 </style>
 
 <style>
@@ -1165,7 +1239,43 @@ body::before {
       </select>
       <input type="number" class="duration-input" id="todoCreateDuration" placeholder="分钟" min="1" value="25">
     </div>
-    <textarea class="todo-create-content-input" id="todoCreateContent" placeholder="支持 Markdown 语法..."></textarea>
+    <div class="rich-editor-wrapper" style="flex:1;display:flex;flex-direction:column;min-height:0;position:relative;">
+      <div class="rich-editor-toolbar" id="richEditorToolbar">
+        <button class="rich-editor-btn" data-cmd="bold" title="加粗"><b>B</b></button>
+        <button class="rich-editor-btn" data-cmd="italic" title="斜体"><i>I</i></button>
+        <button class="rich-editor-btn" data-cmd="underline" title="下划线"><u>U</u></button>
+        <button class="rich-editor-btn" data-cmd="strikeThrough" title="删除线"><s>S</s></button>
+        <div class="rich-editor-separator"></div>
+        <button class="rich-editor-btn" id="headingBtn" title="标题">H</button>
+        <button class="rich-editor-btn" id="fontSizeBtn" title="字号">A</button>
+        <button class="rich-editor-btn" id="colorBtn" title="颜色">🎨</button>
+        <div class="rich-editor-separator"></div>
+        <button class="rich-editor-btn" data-cmd="justifyLeft" title="左对齐">≡</button>
+        <button class="rich-editor-btn" data-cmd="justifyCenter" title="居中">≡</button>
+        <button class="rich-editor-btn" data-cmd="justifyRight" title="右对齐">≡</button>
+        <div class="rich-editor-separator"></div>
+        <button class="rich-editor-btn" data-cmd="insertOrderedList" title="有序列表">1.</button>
+        <button class="rich-editor-btn" data-cmd="insertUnorderedList" title="无序列表">•</button>
+        <button class="rich-editor-btn" id="checklistBtn" title="待办列表">☑</button>
+        <div class="rich-editor-separator"></div>
+        <button class="rich-editor-btn" id="insertImageBtn" title="插入图片">🖼</button>
+        <button class="rich-editor-btn" data-cmd="insertHorizontalRule" title="分割线">―</button>
+      </div>
+      <div class="rich-editor-dropdown" id="headingDropdown">
+        <div class="rich-editor-dropdown-item" data-heading="H1" style="font-size:20px;font-weight:bold;">标题1</div>
+        <div class="rich-editor-dropdown-item" data-heading="H2" style="font-size:17px;font-weight:bold;">标题2</div>
+        <div class="rich-editor-dropdown-item" data-heading="H3" style="font-size:15px;font-weight:bold;">标题3</div>
+        <div class="rich-editor-dropdown-item" data-heading="P" style="font-size:14px;">正文</div>
+      </div>
+      <div class="rich-editor-dropdown" id="fontSizeDropdown">
+        <div class="rich-editor-dropdown-item" data-size="2">小 (12px)</div>
+        <div class="rich-editor-dropdown-item" data-size="3">中 (14px)</div>
+        <div class="rich-editor-dropdown-item" data-size="4">大 (18px)</div>
+        <div class="rich-editor-dropdown-item" data-size="5">特大 (24px)</div>
+      </div>
+      <div class="rich-editor-color-picker" id="colorPicker"></div>
+      <div class="rich-editor-content" id="todoCreateContent" contenteditable="true" data-placeholder="输入待办内容..."></div>
+    </div>
   </div>
 </div>
 
@@ -2601,7 +2711,7 @@ function addTodoFromOverlay() {
   const newTodo = {
     id: Date.now(),
     title: title,
-    content: contentInput.value || '',
+    content: contentInput.innerHTML.trim() === '<br>' ? '' : contentInput.innerHTML || '',
     dueTime: timeInput.value || '',
     completed: false,
     timerMode: tMode,
@@ -2618,7 +2728,7 @@ function addTodoFromOverlay() {
 
   // Reset form
   titleInput.value = '';
-  contentInput.value = '';
+  contentInput.innerHTML = '';
   timeInput.value = '';
   durationInput.value = '25';
   modeSelect.value = 'countdown';
@@ -2638,6 +2748,13 @@ function saveTodos() { localStorage.setItem('pomodoro_todos', JSON.stringify(tod
 </script>
 
 <script>
+// ========== RICH TEXT EDITOR CONTENT HELPER ==========
+function renderTodoContent(content) {
+  if (!content) return '';
+  if (/<[a-z][\s\S]*>/i.test(content)) return content;
+  return renderMarkdown(content);
+}
+
 // ========== MARKDOWN RENDERER ==========
 function renderMarkdown(text) {
   if (!text) return '';
@@ -3199,6 +3316,171 @@ initWithSync().catch(() => console.log('离线模式运行'));
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(() => {}); }
+</script>
+
+<!-- Rich Text Editor Logic -->
+<script>
+(function() {
+  const editor = document.getElementById('todoCreateContent');
+  const toolbar = document.getElementById('richEditorToolbar');
+  const headingBtn = document.getElementById('headingBtn');
+  const fontSizeBtn = document.getElementById('fontSizeBtn');
+  const colorBtn = document.getElementById('colorBtn');
+  const checklistBtn = document.getElementById('checklistBtn');
+  const insertImageBtn = document.getElementById('insertImageBtn');
+  const headingDropdown = document.getElementById('headingDropdown');
+  const fontSizeDropdown = document.getElementById('fontSizeDropdown');
+  const colorPicker = document.getElementById('colorPicker');
+
+  // --- Simple command buttons ---
+  toolbar.querySelectorAll('.rich-editor-btn[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.execCommand(this.dataset.cmd, false, null);
+      editor.focus();
+    });
+  });
+
+  // --- Heading dropdown ---
+  headingBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    closeAllDropdowns();
+    headingDropdown.classList.toggle('show');
+  });
+  headingDropdown.querySelectorAll('.rich-editor-dropdown-item').forEach(item => {
+    item.addEventListener('click', function() {
+      const tag = this.dataset.heading;
+      document.execCommand('formatBlock', false, tag);
+      headingDropdown.classList.remove('show');
+      editor.focus();
+    });
+  });
+
+  // --- Font size dropdown ---
+  fontSizeBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    closeAllDropdowns();
+    fontSizeDropdown.classList.toggle('show');
+  });
+  fontSizeDropdown.querySelectorAll('.rich-editor-dropdown-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.execCommand('fontSize', false, this.dataset.size);
+      fontSizeDropdown.classList.remove('show');
+      editor.focus();
+    });
+  });
+
+  // --- Color picker ---
+  const colors = ['#000000', '#e74c3c', '#3498db', '#27ae60', '#f39c12', '#9b59b6', '#7f8c8d', '#8B4513'];
+  colors.forEach(color => {
+    const dot = document.createElement('div');
+    dot.className = 'rich-editor-color-dot';
+    dot.style.background = color;
+    dot.addEventListener('click', function() {
+      document.execCommand('foreColor', false, color);
+      colorPicker.classList.remove('show');
+      editor.focus();
+    });
+    colorPicker.appendChild(dot);
+  });
+  colorBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    closeAllDropdowns();
+    colorPicker.classList.toggle('show');
+  });
+
+  // --- Checklist ---
+  checklistBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    document.execCommand('insertHTML', false, '<div class="checklist-item"><input type="checkbox"><span contenteditable="true">待办项</span></div>');
+    editor.focus();
+  });
+
+  // --- Image insertion ---
+  insertImageBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        document.execCommand('insertHTML', false, '<img src="' + ev.target.result + '" style="max-width:100%;border-radius:8px;margin:8px 0;">');
+        editor.focus();
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  });
+
+  // --- Image click handling (enlarge/delete) ---
+  let imgOverlay = document.createElement('div');
+  imgOverlay.className = 'rich-editor-img-overlay';
+  imgOverlay.innerHTML = '<button class="close-btn">&times;</button><img src=""><button class="delete-btn">删除图片</button>';
+  document.body.appendChild(imgOverlay);
+
+  let selectedImg = null;
+  editor.addEventListener('click', function(e) {
+    if (e.target.tagName === 'IMG') {
+      selectedImg = e.target;
+      imgOverlay.querySelector('img').src = e.target.src;
+      imgOverlay.classList.add('show');
+    }
+  });
+  imgOverlay.querySelector('.close-btn').addEventListener('click', function() {
+    imgOverlay.classList.remove('show');
+    selectedImg = null;
+  });
+  imgOverlay.querySelector('.delete-btn').addEventListener('click', function() {
+    if (selectedImg && selectedImg.parentNode) {
+      selectedImg.parentNode.removeChild(selectedImg);
+    }
+    imgOverlay.classList.remove('show');
+    selectedImg = null;
+  });
+
+  // --- Keyboard shortcuts ---
+  editor.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+      switch (e.key.toLowerCase()) {
+        case 'b': e.preventDefault(); document.execCommand('bold'); break;
+        case 'i': e.preventDefault(); document.execCommand('italic'); break;
+        case 'u': e.preventDefault(); document.execCommand('underline'); break;
+      }
+    }
+  });
+
+  // --- Toolbar state tracking ---
+  document.addEventListener('selectionchange', function() {
+    if (!document.activeElement || document.activeElement !== editor) return;
+    toolbar.querySelectorAll('.rich-editor-btn[data-cmd]').forEach(btn => {
+      const cmd = btn.dataset.cmd;
+      if (['bold', 'italic', 'underline', 'strikeThrough'].includes(cmd)) {
+        btn.classList.toggle('active', document.queryCommandState(cmd));
+      }
+    });
+  });
+
+  // --- Close dropdowns on outside click ---
+  function closeAllDropdowns() {
+    headingDropdown.classList.remove('show');
+    fontSizeDropdown.classList.remove('show');
+    colorPicker.classList.remove('show');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#headingBtn') && !e.target.closest('#headingDropdown')) {
+      headingDropdown.classList.remove('show');
+    }
+    if (!e.target.closest('#fontSizeBtn') && !e.target.closest('#fontSizeDropdown')) {
+      fontSizeDropdown.classList.remove('show');
+    }
+    if (!e.target.closest('#colorBtn') && !e.target.closest('#colorPicker')) {
+      colorPicker.classList.remove('show');
+    }
+  });
+})();
 </script>
 </body>
 </html>
