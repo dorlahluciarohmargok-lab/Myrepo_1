@@ -353,7 +353,7 @@ body::before {
 .rich-editor-btn.active { background: var(--primary); color: white; }
 .rich-editor-content {
   min-height: 200px; flex: 1; width: 100%; padding: 14px;
-  border: 1.5px solid #eee; border-radius: 14px; font-size: 14px;
+  border: 1.5px solid #eee; border-radius: 14px; font-size: 10.5pt;
   font-family: 'Noto Sans SC', sans-serif; outline: none;
   background: #fafafa; line-height: 1.7; overflow-y: auto;
   color: var(--text-primary);
@@ -361,6 +361,22 @@ body::before {
 .rich-editor-content:focus { border-color: var(--primary); background: white; }
 .rich-editor-content:empty:before {
   content: attr(data-placeholder); color: #bbb; pointer-events: none;
+}
+/* 标题字体规范 */
+.rich-editor-content h1 {
+  font-size: 16pt; font-weight: bold;
+  font-family: '宋体', 'SimSun', 'Noto Sans SC', sans-serif;
+  margin: 8px 0 4px; line-height: 1.4;
+}
+.rich-editor-content h2 {
+  font-size: 14pt; font-weight: bold;
+  font-family: '宋体', 'SimSun', 'Noto Sans SC', sans-serif;
+  margin: 6px 0 4px; line-height: 1.4;
+}
+.rich-editor-content h3 {
+  font-size: 12pt; font-weight: bold;
+  font-family: '宋体', 'SimSun', 'Noto Sans SC', sans-serif;
+  margin: 6px 0 4px; line-height: 1.4;
 }
 .rich-editor-separator {
   width: 1px; height: 20px; background: #e0e0e0; margin: 0 4px;
@@ -1262,10 +1278,10 @@ body::before {
         <button class="rich-editor-btn" data-cmd="insertHorizontalRule" title="分割线">―</button>
       </div>
       <div class="rich-editor-dropdown" id="headingDropdown">
-        <div class="rich-editor-dropdown-item" data-heading="H1" style="font-size:20px;font-weight:bold;">标题1</div>
-        <div class="rich-editor-dropdown-item" data-heading="H2" style="font-size:17px;font-weight:bold;">标题2</div>
-        <div class="rich-editor-dropdown-item" data-heading="H3" style="font-size:15px;font-weight:bold;">标题3</div>
-        <div class="rich-editor-dropdown-item" data-heading="P" style="font-size:14px;">正文</div>
+        <div class="rich-editor-dropdown-item" data-heading="H1" style="font-size:16pt;font-weight:bold;font-family:'宋体','SimSun','Noto Sans SC',sans-serif;">标题1 &nbsp;<small style="font-size:11px;color:#999;font-weight:normal;">三号·宋体·加粗</small></div>
+        <div class="rich-editor-dropdown-item" data-heading="H2" style="font-size:14pt;font-weight:bold;font-family:'宋体','SimSun','Noto Sans SC',sans-serif;">标题2 &nbsp;<small style="font-size:11px;color:#999;font-weight:normal;">四号·宋体·加粗</small></div>
+        <div class="rich-editor-dropdown-item" data-heading="H3" style="font-size:12pt;font-weight:bold;font-family:'宋体','SimSun','Noto Sans SC',sans-serif;">标题3 &nbsp;<small style="font-size:11px;color:#999;font-weight:normal;">小四·宋体·加粗</small></div>
+        <div class="rich-editor-dropdown-item" data-heading="P" style="font-size:10.5pt;font-family:'Noto Sans SC',sans-serif;">正文 &nbsp;<small style="font-size:11px;color:#999;">五号·默认</small></div>
       </div>
       <div class="rich-editor-dropdown" id="fontSizeDropdown">
         <div class="rich-editor-dropdown-item" data-size="2">小 (12px)</div>
