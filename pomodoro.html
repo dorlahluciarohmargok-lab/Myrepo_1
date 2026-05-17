@@ -416,6 +416,35 @@ body::before {
 .rich-editor-img-overlay img {
   max-width: 90%; max-height: 80vh; border-radius: 8px;
 }
+/* Rich Text Editor - Right-click Context Menu */
+.rich-context-menu {
+  position: fixed;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 6px;
+  z-index: 10002;
+  display: none;
+  min-width: 180px;
+}
+.rich-context-menu.show { display: block; }
+.rich-context-menu-item {
+  padding: 9px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Noto Sans SC', sans-serif;
+  color: #2C3E50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rich-context-menu-item:hover { background: #FFF3F0; color: var(--primary); }
+.rich-context-menu-separator {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 4px 0;
+}
 .rich-editor-img-overlay .close-btn {
   position: absolute; top: 20px; right: 20px; color: white;
   font-size: 32px; cursor: pointer; background: none; border: none;
@@ -3512,5 +3541,92 @@ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').
   });
 })();
 </script>
+
+<!-- Rich Text Editor - Right-click Context Menu Logic -->
+<script>
+(function() {
+  const richContextMenu = document.getElementById('richContextMenu');
+  if (!richContextMenu) return;
+  const editor = document.getElementById('todoCreateContent') || document.querySelector('.rich-editor-content[contenteditable]');
+  if (!editor) return;
+
+  let savedRange = null;
+
+  editor.addEventListener('contextmenu', function(e) {
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim().length > 0) {
+      e.preventDefault();
+      savedRange = selection.getRangeAt(0).cloneRange();
+      const menuWidth = 200;
+      const menuHeight = 180;
+      let x = e.clientX;
+      let y = e.clientY;
+      if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 8;
+      if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 8;
+      richContextMenu.style.left = x + 'px';
+      richContextMenu.style.top = y + 'px';
+      richContextMenu.classList.add('show');
+    }
+  });
+
+  richContextMenu.querySelectorAll('.rich-context-menu-item').forEach(function(item) {
+    item.addEventListener('mousedown', function(e) {
+      e.preventDefault(); // prevent blur before we restore selection
+    });
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const block = this.dataset.block;
+      if (savedRange) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+      }
+      document.execCommand('formatBlock', false, block);
+      richContextMenu.classList.remove('show');
+      editor.focus();
+      savedRange = null;
+    });
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#richContextMenu')) {
+      richContextMenu.classList.remove('show');
+    }
+  });
+
+  document.addEventListener('contextmenu', function(e) {
+    if (!e.target.closest('.rich-editor-content') && !e.target.closest('[contenteditable]')) {
+      richContextMenu.classList.remove('show');
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') richContextMenu.classList.remove('show');
+  });
+})();
+</script>
+<div class="rich-context-menu" id="richContextMenu">
+  <div class="rich-context-menu-item" data-block="H1">
+    <span style="font-size:13pt;font-weight:bold;font-family:'宋体',serif;">H1</span>
+    标题1
+    <small style="color:#999;font-size:11px;margin-left:auto;">三号·宋体·加粗</small>
+  </div>
+  <div class="rich-context-menu-item" data-block="H2">
+    <span style="font-size:11pt;font-weight:bold;font-family:'宋体',serif;">H2</span>
+    标题2
+    <small style="color:#999;font-size:11px;margin-left:auto;">四号·宋体·加粗</small>
+  </div>
+  <div class="rich-context-menu-item" data-block="H3">
+    <span style="font-size:10pt;font-weight:bold;font-family:'宋体',serif;">H3</span>
+    标题3
+    <small style="color:#999;font-size:11px;margin-left:auto;">小四·宋体·加粗</small>
+  </div>
+  <div class="rich-context-menu-separator"></div>
+  <div class="rich-context-menu-item" data-block="P">
+    <span style="font-size:10pt;">正</span>
+    正文
+    <small style="color:#999;font-size:11px;margin-left:auto;">五号·默认</small>
+  </div>
+</div>
 </body>
 </html>
