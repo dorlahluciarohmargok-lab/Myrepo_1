@@ -1230,6 +1230,147 @@ body::before {
 .settings-toggle.on::after { left: 22px; }
 </style>
 
+<style>
+/* ===== FEAT-002: 心神不宁检测器 ===== */
+.stability-bar-wrapper {
+  width: 85%;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.stability-bar {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.2);
+  overflow: hidden;
+}
+.stability-bar-inner {
+  height: 100%;
+  width: 100%;
+  border-radius: 3px;
+  background: #4CAF50;
+  transition: background 0.5s ease, width 0.3s ease;
+}
+.stability-bar.warning .stability-bar-inner { background: #FF9800; }
+.stability-bar.danger .stability-bar-inner { background: #F44336; }
+.stability-distraction-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.stability-message {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  font-family: 'Noto Sans SC', sans-serif;
+  text-align: center;
+  min-height: 18px;
+  transition: opacity 0.3s;
+}
+/* Stability in completion card */
+.stability-completion-section {
+  width: 100%;
+  background: rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  text-align: center;
+}
+.stability-completion-pct {
+  font-family: 'Nunito', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.stability-completion-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.75);
+  font-family: 'Noto Sans SC', sans-serif;
+  margin-bottom: 6px;
+}
+.stability-completion-insight {
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  font-family: 'Noto Sans SC', sans-serif;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.stability-curve-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+/* Stability stats card */
+.stability-stats-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-top: 16px;
+}
+.stability-stats-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+}
+.stability-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.stability-stat-item { text-align: center; }
+.stability-stat-value {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #4CAF50;
+}
+.stability-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+/* Permission card */
+.stability-permission-card {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10005;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stability-permission-content {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.stability-permission-emoji { font-size: 48px; margin-bottom: 12px; }
+.stability-permission-title { font-size: 18px; font-weight: 700; color: #2C3E50; margin-bottom: 8px; }
+.stability-permission-text { font-size: 13px; color: #7F8C8D; margin-bottom: 24px; line-height: 1.6; }
+.stability-permission-btns { display: flex; gap: 12px; }
+.stability-permission-btn-skip {
+  flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 12px;
+  background: white; color: #7F8C8D; font-size: 14px; cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.stability-permission-btn-enable {
+  flex: 1; padding: 12px; border: none; border-radius: 12px;
+  background: #4CAF50; color: white; font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+</style>
+
 </head>
 <body>
 <div class="app-container" id="app">
@@ -1337,6 +1478,15 @@ body::before {
             <div class="fragment-ring-label" id="fragRingLabel">目标：100小时 (0%)</div>
           </div>
         </div>
+        <div class="stability-stats-card" id="stabilityStatsCard" style="display:none;">
+          <div class="stability-stats-title">📡 专注稳定度</div>
+          <div class="stability-stats-grid">
+            <div class="stability-stat-item"><div class="stability-stat-value" id="stabStatAvg">--</div><div class="stability-stat-label">平均稳定度</div></div>
+            <div class="stability-stat-item"><div class="stability-stat-value" id="stabStatDistractCount">0</div><div class="stability-stat-label">平均分心次数</div></div>
+            <div class="stability-stat-item"><div class="stability-stat-value" id="stabStatSessions">0</div><div class="stability-stat-label">检测次数</div></div>
+            <div class="stability-stat-item" style="grid-column:span 1;"><div class="stability-stat-value" id="stabStatBestTime" style="font-size:14px;">--</div><div class="stability-stat-label">最易分心时段</div></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="view" id="viewMood">
@@ -1431,6 +1581,13 @@ body::before {
   <!-- Focus Mode Overlay (shared by all 3 modes) -->
   <div class="focus-overlay" id="focusOverlay" style="display:none;">
     <div class="focus-overlay-content">
+      <div class="stability-bar-wrapper" id="stabilityBarWrapper" style="display:none;">
+        <div class="stability-bar" id="stabilityBar">
+          <div class="stability-bar-inner" id="stabilityBarInner"></div>
+        </div>
+        <div class="stability-distraction-label" id="distractionLabel"></div>
+        <div class="stability-message" id="stabilityMessage"></div>
+      </div>
       <div class="focus-overlay-emoji" id="focusOverlayEmoji">🍅</div>
       <div class="focus-overlay-title" id="focusOverlayTitle">专注中</div>
       <div class="focus-overlay-timer" id="focusOverlayTimer">25:00</div>
@@ -1472,6 +1629,12 @@ body::before {
         <div class="completion-card-icon">🎉</div>
         <div class="completion-card-title">完成！</div>
         <div class="completion-card-duration" id="completionCardDuration">你专注了25分钟</div>
+        <div class="stability-completion-section" id="stabilityCompletionSection" style="display:none;">
+          <div class="stability-completion-label">专注稳定度</div>
+          <div class="stability-completion-pct" id="stabilityCompletionPct">100%</div>
+          <div class="stability-completion-insight" id="stabilityCompletionInsight">专注力超强！</div>
+          <div class="stability-curve-bar" id="stabilityCurveBar" style="background:linear-gradient(to right, #4CAF50 100%, transparent 0%)"></div>
+        </div>
         <div class="completion-card-quote" id="completionCardQuote">每一次专注，都是对自己最好的投资。</div>
         <button class="completion-card-btn" id="completionCardBtn">太棒了 👏</button>
       </div>
@@ -4388,5 +4551,335 @@ window.renderStats = function() {
 // Init feature flags on load
 applyFeatureFlags();
 </script>
+
+<div class="stability-permission-card" id="stabilityPermissionCard" style="display:none;">
+  <div class="stability-permission-content">
+    <div class="stability-permission-emoji">📡</div>
+    <div class="stability-permission-title">开启心神检测</div>
+    <div class="stability-permission-text">帮你了解真实专注质量，通过设备传感器检测分心时刻。不惩罚、不强制，仅供参考。</div>
+    <div class="stability-permission-btns">
+      <button class="stability-permission-btn-skip" id="stabilityPermissionSkip">稍后再说</button>
+      <button class="stability-permission-btn-enable" id="stabilityPermissionEnable">开启检测</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== FEAT-002: 心神不宁检测器 ==========
+const STABILITY_SESSIONS_KEY = 'pomodoro_stability_sessions';
+let stabilityEnabled = true; // overridden by featureFlags.stability
+let motionPermissionGranted = localStorage.getItem('pomodoro_motion_permission') === 'granted';
+let motionPermissionAsked = localStorage.getItem('pomodoro_motion_permission') !== null;
+let distractionEvents = [];
+let distractionCount = 0;
+let stabilitySessionStartTime = null;
+let motionSamplingInterval = null;
+let lastAccelZ = 0;
+let tiltAccumulator = 0;
+const SHAKE_THRESHOLD = 25;
+const TILT_THRESHOLD = 5;
+const TILT_DURATION_THRESHOLD = 10; // 2 seconds at 5Hz = 10 samples
+
+// Gentle reminder messages
+const DISTRACTION_MESSAGES = [
+  '感觉有点分心了，深呼吸一下~',
+  '把注意力拉回来，你可以的！',
+  '放下手机，专注眼前~',
+  '分心是正常的，重新聚焦就好 ✨',
+  '专注5分钟，只需要5分钟~'
+];
+
+// ========== STABILITY: Permission Flow ==========
+function checkStabilityPermission(callback) {
+  if (!featureFlags.stability) { callback(false); return; }
+  if (motionPermissionGranted) { callback(true); return; }
+  if (motionPermissionAsked) { callback(false); return; }
+  // Show permission card
+  document.getElementById('stabilityPermissionCard').style.display = 'flex';
+  window._stabilityPermissionCallback = callback;
+}
+
+document.getElementById('stabilityPermissionEnable').addEventListener('click', function() {
+  document.getElementById('stabilityPermissionCard').style.display = 'none';
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    // iOS 13+
+    DeviceMotionEvent.requestPermission().then(function(result) {
+      if (result === 'granted') {
+        motionPermissionGranted = true;
+        localStorage.setItem('pomodoro_motion_permission', 'granted');
+      }
+      motionPermissionAsked = true;
+      localStorage.setItem('pomodoro_motion_asked', '1');
+      if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(motionPermissionGranted);
+    }).catch(function() {
+      motionPermissionAsked = true;
+      if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(false);
+    });
+  } else {
+    // Android / Desktop - permission auto-granted
+    motionPermissionGranted = true;
+    motionPermissionAsked = true;
+    localStorage.setItem('pomodoro_motion_permission', 'granted');
+    localStorage.setItem('pomodoro_motion_asked', '1');
+    if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(true);
+  }
+});
+
+document.getElementById('stabilityPermissionSkip').addEventListener('click', function() {
+  document.getElementById('stabilityPermissionCard').style.display = 'none';
+  motionPermissionAsked = true;
+  localStorage.setItem('pomodoro_motion_asked', '1');
+  if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(false);
+});
+
+// ========== STABILITY: Sampling ==========
+function startMotionSampling() {
+  if (!featureFlags.stability) return;
+  distractionEvents = [];
+  distractionCount = 0;
+  tiltAccumulator = 0;
+  lastAccelZ = 0;
+  stabilitySessionStartTime = Date.now();
+  // Show stability bar
+  var wrapper = document.getElementById('stabilityBarWrapper');
+  if (wrapper) wrapper.style.display = 'flex';
+  resetStabilityBar();
+
+  if (!motionPermissionGranted) return; // can show bar but no sensor data without permission
+
+  function handleMotion(e) {
+    var accel = e.accelerationIncludingGravity || e.acceleration;
+    if (!accel) return;
+    var x = accel.x || 0;
+    var y = accel.y || 0;
+    var z = accel.z || 0;
+    var magnitude = Math.sqrt(x*x + y*y + z*z);
+    // Ignore light movements (typing etc)
+    if (magnitude < 12) { tiltAccumulator = 0; lastAccelZ = z; return; }
+    // Shake detection
+    if (magnitude > SHAKE_THRESHOLD) {
+      recordDistractionEvent('shake', magnitude);
+      return;
+    }
+    // Tilt/pickup detection
+    var zDelta = Math.abs(z - lastAccelZ);
+    if (zDelta > TILT_THRESHOLD) {
+      tiltAccumulator++;
+      if (tiltAccumulator >= TILT_DURATION_THRESHOLD) {
+        recordDistractionEvent('tilt', zDelta);
+        tiltAccumulator = 0;
+      }
+    } else {
+      if (tiltAccumulator > 0) tiltAccumulator--;
+    }
+    lastAccelZ = z;
+  }
+
+  window._stabilityMotionHandler = handleMotion;
+  window.addEventListener('devicemotion', handleMotion);
+}
+
+function stopMotionSampling() {
+  if (window._stabilityMotionHandler) {
+    window.removeEventListener('devicemotion', window._stabilityMotionHandler);
+    window._stabilityMotionHandler = null;
+  }
+  if (motionSamplingInterval) { clearInterval(motionSamplingInterval); motionSamplingInterval = null; }
+  // Hide stability bar
+  var wrapper = document.getElementById('stabilityBarWrapper');
+  if (wrapper) wrapper.style.display = 'none';
+  resetStabilityBar();
+}
+
+function recordDistractionEvent(type, magnitude) {
+  var now = Date.now();
+  // Debounce: ignore events within 2s of last one
+  if (distractionEvents.length > 0 && now - distractionEvents[distractionEvents.length-1].ts < 2000) return;
+  distractionEvents.push({ ts: now, type: type, magnitude: magnitude });
+  distractionCount++;
+  updateStabilityBar();
+}
+
+// ========== STABILITY: Real-time Feedback ==========
+function resetStabilityBar() {
+  var bar = document.getElementById('stabilityBar');
+  var label = document.getElementById('distractionLabel');
+  var msg = document.getElementById('stabilityMessage');
+  if (bar) { bar.className = 'stability-bar'; }
+  if (label) label.textContent = '';
+  if (msg) msg.textContent = '';
+}
+
+function updateStabilityBar() {
+  var bar = document.getElementById('stabilityBar');
+  var label = document.getElementById('distractionLabel');
+  var msg = document.getElementById('stabilityMessage');
+  if (!bar) return;
+  bar.className = 'stability-bar';
+  if (distractionCount >= 6) {
+    bar.classList.add('danger');
+  } else if (distractionCount >= 3) {
+    bar.classList.add('warning');
+  }
+  if (label) label.textContent = distractionCount > 0 ? '分心 x' + distractionCount : '';
+  // Gentle message every 3 distractions
+  if (msg) {
+    if (distractionCount > 0 && distractionCount % 3 === 0) {
+      var idx = Math.floor(distractionCount / 3 - 1) % DISTRACTION_MESSAGES.length;
+      msg.textContent = DISTRACTION_MESSAGES[idx];
+    } else if (distractionCount === 0) {
+      msg.textContent = '';
+    }
+  }
+}
+
+// ========== STABILITY: Post-session Report ==========
+function computeStabilityReport() {
+  var stabilityPct = Math.max(20, 100 - distractionCount * 5);
+  var insight = '';
+  if (distractionCount === 0) insight = '太厉害了！本次零分心，专注力超强！🏆';
+  else if (distractionCount <= 2) insight = '非常专注，分心极少，继续保持！✨';
+  else if (distractionCount <= 5) insight = '有几次分心，整体还不错，加油！💪';
+  else if (distractionCount <= 10) insight = '分心较多，试试消除干扰源再专注~';
+  else insight = '今天状态欠佳，明天会更好的 🌱';
+  return { pct: stabilityPct, insight: insight, count: distractionCount };
+}
+
+function showStabilityInCompletionCard(durationSeconds) {
+  if (!featureFlags.stability) {
+    var section0 = document.getElementById('stabilityCompletionSection');
+    if (section0) section0.style.display = 'none';
+    return;
+  }
+  var report = computeStabilityReport();
+  var section = document.getElementById('stabilityCompletionSection');
+  if (!section) return;
+  section.style.display = 'block';
+  document.getElementById('stabilityCompletionPct').textContent = report.pct + '%';
+  document.getElementById('stabilityCompletionInsight').textContent = report.insight;
+  // Stability curve bar: green portion = stabilityPct%
+  var greenPct = report.pct;
+  var barGradient = '';
+  if (greenPct >= 80) {
+    barGradient = 'linear-gradient(to right, #4CAF50 ' + greenPct + '%, rgba(255,255,255,0.2) ' + greenPct + '%)';
+  } else if (greenPct >= 50) {
+    barGradient = 'linear-gradient(to right, #4CAF50 ' + (greenPct*0.6) + '%, #FF9800 ' + greenPct + '%, rgba(255,255,255,0.2) ' + greenPct + '%)';
+  } else {
+    barGradient = 'linear-gradient(to right, #F44336 ' + greenPct + '%, rgba(255,255,255,0.2) ' + greenPct + '%)';
+  }
+  document.getElementById('stabilityCurveBar').style.background = barGradient;
+  // Save to history
+  saveStabilitySession({ date: getTodayKey(), ts: Date.now(), durationSeconds: durationSeconds, stabilityPct: report.pct, distractionCount: report.count });
+  // Reset for next session
+  distractionEvents = [];
+  distractionCount = 0;
+}
+
+function saveStabilitySession(session) {
+  var sessions = JSON.parse(localStorage.getItem(STABILITY_SESSIONS_KEY) || '[]');
+  sessions.push(session);
+  localStorage.setItem(STABILITY_SESSIONS_KEY, JSON.stringify(sessions));
+}
+
+// ========== STABILITY: Stats Rendering ==========
+function renderStabilityStats() {
+  var card = document.getElementById('stabilityStatsCard');
+  if (!card) return;
+  if (!featureFlags.stability) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  var sessions = JSON.parse(localStorage.getItem(STABILITY_SESSIONS_KEY) || '[]');
+  if (sessions.length === 0) {
+    document.getElementById('stabStatAvg').textContent = '--';
+    document.getElementById('stabStatDistractCount').textContent = '0';
+    document.getElementById('stabStatSessions').textContent = '0';
+    document.getElementById('stabStatBestTime').textContent = '--';
+    return;
+  }
+  var avgStability = Math.round(sessions.reduce(function(s, r) { return s + r.stabilityPct; }, 0) / sessions.length);
+  var avgDistract = Math.round(sessions.reduce(function(s, r) { return s + r.distractionCount; }, 0) / sessions.length);
+  // Find most distraction-heavy hour
+  var hourCounts = {};
+  sessions.forEach(function(s) {
+    var h = new Date(s.ts).getHours();
+    hourCounts[h] = (hourCounts[h] || 0) + s.distractionCount;
+  });
+  var busiestHour = '--';
+  var maxCount = 0;
+  Object.keys(hourCounts).forEach(function(h) {
+    if (hourCounts[h] > maxCount) {
+      maxCount = hourCounts[h];
+      busiestHour = h + ':00-' + (parseInt(h)+1) + ':00';
+    }
+  });
+  document.getElementById('stabStatAvg').textContent = avgStability + '%';
+  document.getElementById('stabStatDistractCount').textContent = avgDistract;
+  document.getElementById('stabStatSessions').textContent = sessions.length;
+  document.getElementById('stabStatBestTime').textContent = busiestHour;
+}
+
+// ========== STABILITY: Hook into Focus Enter/Exit ==========
+var _origEnterFocusMode = enterFocusMode;
+window.enterFocusMode = function() {
+  _origEnterFocusMode.apply(this, arguments);
+  checkStabilityPermission(function(granted) {
+    if (granted || featureFlags.stability) startMotionSampling();
+  });
+};
+
+var _origExitFocusMode = exitFocusMode;
+window.exitFocusMode = function() {
+  _origExitFocusMode.apply(this, arguments);
+  stopMotionSampling();
+};
+
+var _origEnterGeneralMode = enterGeneralMode;
+window.enterGeneralMode = function() {
+  _origEnterGeneralMode.apply(this, arguments);
+  if (featureFlags.stability) startMotionSampling();
+};
+
+var _origExitGeneralMode = exitGeneralMode;
+window.exitGeneralMode = function() {
+  _origExitGeneralMode.apply(this, arguments);
+  stopMotionSampling();
+};
+
+var _origEnterNormalMode = enterNormalMode;
+window.enterNormalMode = function() {
+  _origEnterNormalMode.apply(this, arguments);
+  if (featureFlags.stability) startMotionSampling();
+};
+
+var _origExitNormalMode = exitNormalMode;
+window.exitNormalMode = function() {
+  _origExitNormalMode.apply(this, arguments);
+  stopMotionSampling();
+};
+
+var _origShowCompletionCard2 = showCompletionCard;
+window.showCompletionCard = function(durationSeconds) {
+  _origShowCompletionCard2.apply(this, arguments);
+  showStabilityInCompletionCard(durationSeconds);
+};
+
+// ========== STABILITY: Extend applyFeatureFlags ==========
+var _origApplyFeatureFlags2 = applyFeatureFlags;
+window.applyFeatureFlags = function() {
+  _origApplyFeatureFlags2.apply(this, arguments);
+  var card = document.getElementById('stabilityStatsCard');
+  if (card) card.style.display = featureFlags.stability ? 'block' : 'none';
+};
+
+// ========== Hook renderStats for stability ==========
+var _origRenderStats2 = renderStats;
+window.renderStats = function() {
+  _origRenderStats2.apply(this, arguments);
+  renderStabilityStats();
+};
+
+// Init
+applyFeatureFlags();
+</script>
+
 </body>
 </html>
