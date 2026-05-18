@@ -998,10 +998,35 @@ body::before {
   background: rgba(255,255,255,0.12);
   color: white;
   backdrop-filter: blur(6px);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .overlay-pause-btn:hover, .overlay-end-btn:hover {
   background: rgba(255,255,255,0.25);
   border-color: white;
+}
+.overlay-pause-btn.paused {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.8);
+}
+.overlay-end-btn .end-progress {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 0%;
+  background: rgba(255,99,71,0.5);
+  transition: width 0.1s linear;
+  border-radius: 22px;
+  pointer-events: none;
+}
+.overlay-end-btn.holding {
+  border-color: #FF6347;
+  background: rgba(255,99,71,0.2);
+}
+.overlay-end-btn .end-btn-text {
+  position: relative;
+  z-index: 1;
 }
 
 /* Confirm dialogs */
@@ -1191,7 +1216,7 @@ body::before {
       <div class="focus-overlay-quote" id="focusOverlayQuote"></div>
       <div class="overlay-action-btns" id="overlayActionBtns">
         <button class="overlay-pause-btn" id="overlayPauseBtn">⏸ 暂停</button>
-        <button class="overlay-end-btn" id="overlayEndBtn">⏹ 结束</button>
+        <button class="overlay-end-btn" id="overlayEndBtn"><span class="end-progress"></span><span class="end-btn-text">⏹ 长按结束</span></button>
       </div>
       <button class="focus-give-up-btn" id="focusGiveUpBtn"><span class="give-up-progress"></span>长按3秒放弃专注</button>
     </div>
@@ -1986,6 +2011,13 @@ function exitFocusMode(completed) {
   // Stop alarm
   stopFocusAlarm();
 
+  // Reset overlay pause state
+  if (typeof overlayPaused !== 'undefined') {
+    overlayPaused = false;
+    const pb = document.getElementById('overlayPauseBtn');
+    if (pb) { pb.textContent = '⏸ 暂停'; pb.classList.remove('paused'); }
+  }
+
   // Celebrate if completed
   if (completed) {
     showFocusCompleteCelebration();
@@ -2030,6 +2062,12 @@ function exitGeneralMode() {
   document.getElementById('bottomNav').style.display = 'flex';
   if (beforeUnloadHandler) { window.removeEventListener('beforeunload', beforeUnloadHandler); beforeUnloadHandler = null; }
   if (visibilityHandler) { document.removeEventListener('visibilitychange', visibilityHandler); visibilityHandler = null; }
+  // Reset overlay pause state
+  if (typeof overlayPaused !== 'undefined') {
+    overlayPaused = false;
+    const pb = document.getElementById('overlayPauseBtn');
+    if (pb) { pb.textContent = '⏸ 暂停'; pb.classList.remove('paused'); }
+  }
 }
 
 function enterNormalMode() {
@@ -2050,6 +2088,12 @@ function exitNormalMode() {
   overlay.classList.remove('mode-normal', 'mode-general', 'mode-focus');
   if (focusBgInterval) { clearInterval(focusBgInterval); focusBgInterval = null; }
   document.getElementById('bottomNav').style.display = 'flex';
+  // Reset overlay pause state
+  if (typeof overlayPaused !== 'undefined') {
+    overlayPaused = false;
+    const pb = document.getElementById('overlayPauseBtn');
+    if (pb) { pb.textContent = '⏸ 暂停'; pb.classList.remove('paused'); }
+  }
 }
 
 function configureOverlayForMode(mode) {
@@ -2079,8 +2123,8 @@ function configureOverlayForMode(mode) {
     if (emojiEl) emojiEl.textContent = '🍅';
     if (titleEl) titleEl.textContent = '专注中';
     if (actionBtns) actionBtns.style.display = 'flex';
-    if (endBtn) endBtn.style.display = 'none';
-    if (giveUpBtn) giveUpBtn.style.display = 'block';
+    if (endBtn) endBtn.style.display = 'inline-block';
+    if (giveUpBtn) giveUpBtn.style.display = 'none';
   }
 }
 
@@ -2171,42 +2215,142 @@ giveUpBtn.addEventListener('touchend', endGiveUp);
 giveUpBtn.addEventListener('touchcancel', endGiveUp);
 
 // ========== OVERLAY ACTION BUTTONS ==========
-document.getElementById('overlayPauseBtn').addEventListener('click', () => {
-  if (focusMode === 'normal') { pauseTimer(); exitNormalMode(); }
-  else if (focusMode === 'general') { pauseTimer(); exitGeneralMode(); }
-  else if (focusMode === 'focus') { document.getElementById('confirmPauseDialog').style.display = 'flex'; }
-});
+// --- Pause Button: toggle pause/resume, stay on overlay ---
+let overlayPaused = false;
+const overlayPauseBtn = document.getElementById('overlayPauseBtn');
 
-document.getElementById('overlayEndBtn').addEventListener('click', () => {
-  if (focusMode === 'normal') {
-    stopTimer(); timerState = 'stopped'; btnStartPause.textContent = '\u25B6';
-    if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
-    else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
-    exitNormalMode();
-  } else if (focusMode === 'general') {
-    document.getElementById('confirmEndDialog').style.display = 'flex';
+overlayPauseBtn.addEventListener('click', () => {
+  if (!overlayPaused) {
+    // Pause the timer, stay on overlay
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerState = 'paused';
+    overlayPaused = true;
+    overlayPauseBtn.textContent = '▶ 继续';
+    overlayPauseBtn.classList.add('paused');
+    // Pause the focus overlay emoji animation
+    const emojiEl = document.getElementById('focusOverlayEmoji');
+    if (emojiEl) emojiEl.style.animationPlayState = 'paused';
+  } else {
+    // Resume the timer, stay on overlay
+    overlayPaused = false;
+    overlayPauseBtn.textContent = '⏸ 暂停';
+    overlayPauseBtn.classList.remove('paused');
+    const emojiEl = document.getElementById('focusOverlayEmoji');
+    if (emojiEl) emojiEl.style.animationPlayState = 'running';
+    // Resume timer
+    timerState = 'running';
+    if (timerMode === 'countdown') {
+      timerInterval = setInterval(() => {
+        timerRemaining--;
+        if (timerRemaining <= 0) {
+          timerRemaining = 0;
+          stopTimer();
+          timerState = 'stopped';
+          btnStartPause.textContent = '\u25B6';
+          btnStartPause.style.display = 'flex';
+          btnReset.style.display = 'flex';
+          updateProgress(0);
+          updateTimerDisplay(0);
+          if (Notification.permission === 'granted') new Notification('🍅 番茄专注', { body: '专注时间结束！休息一下吧~' });
+          recordSession(timerDuration, 'countdown');
+          saveTimerToServer('countdown', timerDuration, timerDuration, true);
+          if (focusMode === 'focus' && focusModeActive) exitFocusMode(true);
+          else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
+          else if (focusMode === 'normal' && focusModeActive) exitNormalMode();
+          overlayPaused = false;
+          overlayPauseBtn.textContent = '⏸ 暂停';
+          overlayPauseBtn.classList.remove('paused');
+          showCompletionCard(timerDuration);
+          return;
+        }
+        updateTimerDisplay(timerRemaining);
+        updateProgress(timerRemaining / timerDuration);
+        if (focusModeActive) updateFocusOverlayTimer();
+      }, 1000);
+    } else if (timerMode === 'stopwatch') {
+      timerInterval = setInterval(() => {
+        stopwatchElapsed++;
+        updateTimerDisplay(stopwatchElapsed);
+        updateProgress((stopwatchElapsed % 3600) / 3600);
+        if (focusModeActive) updateFocusOverlayTimer();
+      }, 1000);
+    }
   }
 });
+
+// --- End Button: long press 3 seconds to end ---
+let endHoldTimer = null;
+let endHoldStart = 0;
+let endProgressInterval = null;
+const overlayEndBtn = document.getElementById('overlayEndBtn');
+const endProgress = overlayEndBtn.querySelector('.end-progress');
+
+function startEndHold(e) {
+  e.preventDefault();
+  endHoldStart = Date.now();
+  overlayEndBtn.classList.add('holding');
+  endProgressInterval = setInterval(() => {
+    const elapsed = Date.now() - endHoldStart;
+    const pct = Math.min(100, (elapsed / 3000) * 100);
+    endProgress.style.width = pct + '%';
+    if (elapsed >= 3000) {
+      // Successfully held for 3 seconds - end the session
+      clearInterval(endProgressInterval);
+      endProgressInterval = null;
+      overlayEndBtn.classList.remove('holding');
+      endProgress.style.width = '0%';
+      // Reset overlay pause state
+      overlayPaused = false;
+      overlayPauseBtn.textContent = '⏸ 暂停';
+      overlayPauseBtn.classList.remove('paused');
+      const emojiEl = document.getElementById('focusOverlayEmoji');
+      if (emojiEl) emojiEl.style.animationPlayState = 'running';
+      // Stop the timer and exit overlay
+      stopTimer();
+      timerState = 'stopped';
+      btnStartPause.textContent = '\u25B6';
+      btnStartPause.style.display = 'flex';
+      btnReset.style.display = 'flex';
+      if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
+      else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
+      if (focusMode === 'focus' && focusModeActive) exitFocusMode(false);
+      else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
+      else if (focusMode === 'normal' && focusModeActive) exitNormalMode();
+    }
+  }, 50);
+}
+
+function cancelEndHold(e) {
+  e.preventDefault();
+  if (endProgressInterval) {
+    clearInterval(endProgressInterval);
+    endProgressInterval = null;
+  }
+  overlayEndBtn.classList.remove('holding');
+  endProgress.style.width = '0%';
+}
+
+overlayEndBtn.addEventListener('mousedown', startEndHold);
+overlayEndBtn.addEventListener('mouseup', cancelEndHold);
+overlayEndBtn.addEventListener('mouseleave', cancelEndHold);
+overlayEndBtn.addEventListener('touchstart', startEndHold);
+overlayEndBtn.addEventListener('touchend', cancelEndHold);
+overlayEndBtn.addEventListener('touchcancel', cancelEndHold);
+// Prevent context menu on long press for mobile
+overlayEndBtn.addEventListener('contextmenu', e => e.preventDefault());
 
 document.getElementById('confirmPauseCancel').addEventListener('click', () => {
   document.getElementById('confirmPauseDialog').style.display = 'none';
 });
 document.getElementById('confirmPauseOk').addEventListener('click', () => {
   document.getElementById('confirmPauseDialog').style.display = 'none';
-  pauseTimer();
-  exitFocusMode(false);
-  btnStartPause.style.display = 'flex';
-  btnReset.style.display = 'flex';
 });
 document.getElementById('confirmEndCancel').addEventListener('click', () => {
   document.getElementById('confirmEndDialog').style.display = 'none';
 });
 document.getElementById('confirmEndOk').addEventListener('click', () => {
   document.getElementById('confirmEndDialog').style.display = 'none';
-  stopTimer(); timerState = 'stopped'; btnStartPause.textContent = '\u25B6';
-  if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
-  else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
-  exitGeneralMode();
 });
 
 // ========== FOCUS MODE: Warning Button ==========
