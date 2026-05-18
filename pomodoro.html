@@ -1174,7 +1174,7 @@ body::before {
 }
 .badge-popup {
   position: fixed;
-  bottom: 80px;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: white;
@@ -1509,7 +1509,7 @@ body::before {
 }
 .entropy-deviation-popup {
   position: fixed;
-  bottom: 80px;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: white;
@@ -1682,7 +1682,7 @@ body::before {
         <div class="entropy-stats-card" id="entropyStatsCard" style="display:none;">
           <div class="entropy-stats-title">🌡️ 预估准确率</div>
           <div class="entropy-stats-grid">
-            <div class="entropy-stat-item"><div class="entropy-stat-value" id="entropyStat30Avg">--</div><div class="entropy-stat-label">近30天平均偏差</div></div>
+            <div class="entropy-stat-item"><div class="entropy-stat-value" id="entropyStat30Avg">--</div><div class="entropy-stat-label">平均偏差</div></div>
             <div class="entropy-stat-item"><div class="entropy-stat-value" id="entropyStatTasks">0</div><div class="entropy-stat-label">有预估的任务数</div></div>
           </div>
           <div class="entropy-advice" id="entropyAdvice">暂无足够数据，先完成几个带预估的任务吧~</div>
@@ -4823,6 +4823,7 @@ document.getElementById('stabilityPermissionEnable').addEventListener('click', f
       if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(motionPermissionGranted);
     }).catch(function() {
       motionPermissionAsked = true;
+      localStorage.setItem('pomodoro_motion_permission', 'declined');
       if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(false);
     });
   } else {
@@ -4838,7 +4839,7 @@ document.getElementById('stabilityPermissionEnable').addEventListener('click', f
 document.getElementById('stabilityPermissionSkip').addEventListener('click', function() {
   document.getElementById('stabilityPermissionCard').style.display = 'none';
   motionPermissionAsked = true;
-  localStorage.setItem('pomodoro_motion_asked', '1');
+  localStorage.setItem('pomodoro_motion_permission', 'declined');
   if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(false);
 });
 
@@ -5045,7 +5046,7 @@ window.exitFocusMode = function() {
 var _origEnterGeneralMode = enterGeneralMode;
 window.enterGeneralMode = function() {
   _origEnterGeneralMode.apply(this, arguments);
-  if (featureFlags.stability) startMotionSampling();
+  checkStabilityPermission(function(granted) { if (granted || featureFlags.stability) startMotionSampling(); });
 };
 
 var _origExitGeneralMode = exitGeneralMode;
@@ -5057,7 +5058,7 @@ window.exitGeneralMode = function() {
 var _origEnterNormalMode = enterNormalMode;
 window.enterNormalMode = function() {
   _origEnterNormalMode.apply(this, arguments);
-  if (featureFlags.stability) startMotionSampling();
+  checkStabilityPermission(function(granted) { if (granted || featureFlags.stability) startMotionSampling(); });
 };
 
 var _origExitNormalMode = exitNormalMode;
@@ -5126,6 +5127,8 @@ function applyEntropyUI() {
 var _origAddTodoFromOverlay = addTodoFromOverlay;
 window.addTodoFromOverlay = function() {
   var estPomodoros = featureFlags.entropy ? (parseInt(document.getElementById('entropyValue').textContent) || 1) : undefined;
+  var titleVal = document.getElementById('todoCreateTitle');
+  if (!titleVal || !titleVal.value.trim()) return;
   _origAddTodoFromOverlay.apply(this, arguments);
   if (featureFlags.entropy && todos.length > 0) {
     var lastTodo = todos[todos.length - 1];
@@ -5142,7 +5145,6 @@ var _origMigrateTodos = migrateTodos;
 window.migrateTodos = function() {
   _origMigrateTodos.apply(this, arguments);
   todos = todos.map(function(t) {
-    if (t.estimatedPomodoros === undefined) t.estimatedPomodoros = undefined;
     if (t.actualPomodoros === undefined) t.actualPomodoros = 0;
     return t;
   });
@@ -5281,6 +5283,7 @@ window.showCompletionCard = function(durationSeconds) {
   var todo = todos.find(function(t) { return t.id === _entropyCurrentTodoId; });
   if (!todo || !todo.estimatedPomodoros) return;
   incrementTodoActualPomodoros(_entropyCurrentTodoId);
+  _entropyCurrentTodoId = null;
   var actual = todo.actualPomodoros || 0;
   var estimated = todo.estimatedPomodoros;
   if (actual === estimated + 1) {
