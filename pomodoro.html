@@ -1058,6 +1058,178 @@ body::before {
 }
 </style>
 
+<style>
+/* ========== FEAT-001: 碎片时间回收站 ========== */
+:root { --fragment-color: #FF8C42; }
+
+.mode-switcher {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.mode-switcher-btn {
+  padding: 8px 18px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 22px;
+  font-size: 13px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.mode-switcher-btn.active {
+  border-color: var(--fragment-color);
+  color: var(--fragment-color);
+  background: #FFF3EC;
+}
+.mode-switcher-btn[data-switch="standard"].active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--secondary);
+}
+.fragment-duration-selector {
+  display: none;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.fragment-duration-btn {
+  padding: 6px 16px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 20px;
+  font-size: 13px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.fragment-duration-btn.active {
+  border-color: var(--fragment-color);
+  color: var(--fragment-color);
+  background: #FFF3EC;
+}
+.fragment-status-label {
+  font-size: 13px;
+  color: var(--fragment-color);
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  display: none;
+}
+@keyframes fragmentBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.fragment-blink {
+  animation: fragmentBlink 0.8s ease infinite;
+  stroke: #FF8C42 !important;
+}
+.fragment-stats-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-top: 20px;
+}
+.fragment-stats-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+.fragment-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.fragment-stat-item { text-align: center; }
+.fragment-stat-value {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--fragment-color);
+}
+.fragment-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.fragment-ring-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.fragment-ring-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.badge-popup {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 16px;
+  padding: 16px 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9995;
+  animation: badgeSlideUp 0.5s ease forwards;
+}
+@keyframes badgeSlideUp {
+  from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+.badge-popup-icon { font-size: 28px; }
+.badge-popup-text { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.settings-section { padding: 20px 0; }
+.settings-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--secondary);
+}
+.settings-item-label { font-size: 14px; color: var(--text-primary); }
+.settings-item-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.settings-toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: #ccc;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.settings-toggle.on { background: var(--primary); }
+.settings-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: left 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.settings-toggle.on::after { left: 22px; }
+</style>
+
 </head>
 <body>
 <div class="app-container" id="app">
@@ -1072,6 +1244,10 @@ body::before {
     <!-- Timer View -->
     <div class="view active" id="viewTimer">
       <div class="timer-section">
+        <div class="mode-switcher" id="modeSwitcher">
+          <button class="mode-switcher-btn active" data-switch="standard">⏱ 标准模式</button>
+          <button class="mode-switcher-btn" data-switch="fragment">✨ 碎片模式</button>
+        </div>
         <div class="focus-mode-selector" id="focusModeSelector">
           <button class="focus-mode-btn active" data-focus="normal">🟢 普通</button>
           <button class="focus-mode-btn" data-focus="focus">🔴 专注</button>
@@ -1089,6 +1265,13 @@ body::before {
           <button class="duration-btn" data-minutes="90">90分</button>
           <input type="number" class="custom-duration-input" id="customDuration" placeholder="自定义(分)" min="1">
         </div>
+        <div class="fragment-duration-selector" id="fragmentDurationSelector">
+          <button class="fragment-duration-btn" data-fminutes="5">5分</button>
+          <button class="fragment-duration-btn active" data-fminutes="10">10分</button>
+          <button class="fragment-duration-btn" data-fminutes="15">15分</button>
+          <input type="number" class="custom-duration-input" id="fragmentCustomDuration" placeholder="自定(1-20)" min="1" max="20" style="width:90px">
+        </div>
+        <div class="fragment-status-label" id="fragmentStatusLabel">碎片回收中...</div>
         <div class="timer-circle-wrapper">
           <svg class="timer-svg" viewBox="0 0 220 220">
             <circle class="timer-bg-circle" cx="110" cy="110" r="100"/>
@@ -1138,9 +1321,24 @@ body::before {
         <div class="stats-chart">
           <div class="chart-bars" id="chartBars"></div>
         </div>
+        <div class="fragment-stats-card" id="fragmentStatsCard" style="display:none;">
+          <div class="fragment-stats-title">✨ 碎片回收站</div>
+          <div class="fragment-stats-grid">
+            <div class="fragment-stat-item"><div class="fragment-stat-value" id="fragStatTotal">0分</div><div class="fragment-stat-label">累计回收时间</div></div>
+            <div class="fragment-stat-item"><div class="fragment-stat-value" id="fragStatWeekly">0分</div><div class="fragment-stat-label">本周回收时间</div></div>
+            <div class="fragment-stat-item"><div class="fragment-stat-value" id="fragStatCount">0</div><div class="fragment-stat-label">回收次数</div></div>
+            <div class="fragment-stat-item"><div class="fragment-stat-value" id="fragStatWasted">0</div><div class="fragment-stat-label">浪费次数</div></div>
+          </div>
+          <div class="fragment-ring-container">
+            <svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg)">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#FFE8D6" stroke-width="8"/>
+              <circle id="fragRingProgress" cx="50" cy="50" r="42" fill="none" stroke="#FF8C42" stroke-width="8" stroke-linecap="round" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+            </svg>
+            <div class="fragment-ring-label" id="fragRingLabel">目标：100小时 (0%)</div>
+          </div>
+        </div>
       </div>
     </div>
-    <!-- Mood View -->
     <div class="view" id="viewMood">
       <div class="mood-section">
         <div class="mood-title">今日心情</div>
@@ -1179,9 +1377,32 @@ body::before {
           <textarea class="whitelist-textarea" id="whitelistTextarea" placeholder="例如：&#10;微信&#10;备忘录&#10;计算器"></textarea>
           <button class="whitelist-save-btn" id="whitelistSaveBtn">保存白名单</button>
         </div>
+        <div class="settings-section" id="featureSettings" style="width:100%;text-align:left;">
+          <div class="settings-title">⚙️ 功能开关</div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">✨ 碎片时间回收站</div>
+              <div class="settings-item-desc">将碎片时间转化为可见成就</div>
+            </div>
+            <div class="settings-toggle on" id="toggleFragment" data-flag="fragment"></div>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">📡 心神不宁检测器</div>
+              <div class="settings-item-desc">加速度传感器检测专注质量</div>
+            </div>
+            <div class="settings-toggle on" id="toggleStability" data-flag="stability"></div>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">🌡️ 任务熵值系统</div>
+              <div class="settings-item-desc">预估与追踪任务番茄消耗</div>
+            </div>
+            <div class="settings-toggle on" id="toggleEntropy" data-flag="entropy"></div>
+          </div>
+        </div>
       </div>
     </div>
-    <!-- Wallpaper View -->
     <div class="view" id="viewWallpaper">
       <div class="wallpaper-section">
         <div class="wallpaper-title">壁纸选择</div>
@@ -3819,5 +4040,353 @@ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').
     <small style="color:#999;font-size:11px;margin-left:auto;">五号·默认</small>
   </div>
 </div>
+<div class="confirm-dialog" id="fragmentCompleteDialog" style="display:none;">
+  <div class="confirm-dialog-content">
+    <div class="confirm-dialog-emoji">✨</div>
+    <div class="confirm-dialog-title">碎片回收成功！</div>
+    <div class="confirm-dialog-text" id="fragmentCompleteText">恭喜！你回收了 10 分钟</div>
+    <div class="confirm-dialog-btns">
+      <button class="confirm-btn-ok" id="fragmentCompleteBtn" style="flex:1">太棒了 🎉</button>
+    </div>
+  </div>
+</div>
+<div class="confirm-dialog" id="fragmentAbandonDialog" style="display:none;">
+  <div class="confirm-dialog-content">
+    <div class="confirm-dialog-emoji">❓</div>
+    <div class="confirm-dialog-title">放弃回收？</div>
+    <div class="confirm-dialog-text" id="fragmentAbandonText">放弃本次回收？你将损失这 X 分钟。</div>
+    <div class="confirm-dialog-btns">
+      <button class="confirm-btn-cancel" id="fragmentAbandonCancelBtn">继续回收</button>
+      <button class="confirm-btn-ok" id="fragmentAbandonConfirmBtn">放弃</button>
+    </div>
+  </div>
+</div>
+<div class="badge-popup" id="badgePopup" style="display:none;">
+  <div class="badge-popup-icon" id="badgePopupIcon">🏹</div>
+  <div><div class="badge-popup-text" id="badgePopupTitle">碎片猎人</div><div style="font-size:11px;color:#7F8C8D;" id="badgePopupDesc">累计回收达到60分钟</div></div>
+</div>
+<script>
+// ========== FEAT-001: 碎片时间回收站 ==========
+
+// ========== FEATURE FLAGS ==========
+let featureFlags = JSON.parse(localStorage.getItem('pomodoro_feature_flags') || '{"fragment":true,"stability":true,"entropy":true}');
+function saveFeatureFlags() { localStorage.setItem('pomodoro_feature_flags', JSON.stringify(featureFlags)); }
+
+function applyFeatureFlags() {
+  const modeSwitcher = document.getElementById('modeSwitcher');
+  const fragmentStatsCard = document.getElementById('fragmentStatsCard');
+  if (modeSwitcher) modeSwitcher.style.display = featureFlags.fragment ? 'flex' : 'none';
+  if (fragmentStatsCard) fragmentStatsCard.style.display = featureFlags.fragment ? 'block' : 'none';
+  // Sync toggle visual state
+  document.querySelectorAll('.settings-toggle').forEach(function(t) {
+    var flag = t.dataset.flag;
+    if (flag && featureFlags[flag] !== undefined) {
+      t.classList.toggle('on', !!featureFlags[flag]);
+    }
+  });
+}
+
+// Settings toggle click handlers
+document.querySelectorAll('.settings-toggle').forEach(function(toggle) {
+  toggle.addEventListener('click', function() {
+    var flag = this.dataset.flag;
+    if (!flag) return;
+    featureFlags[flag] = !featureFlags[flag];
+    saveFeatureFlags();
+    applyFeatureFlags();
+    // If turning off fragment mode while in fragment mode, switch back to standard
+    if (flag === 'fragment' && !featureFlags.fragment && fragmentModeActive) {
+      switchToStandardMode();
+    }
+  });
+});
+
+// ========== FRAGMENT MODE STATE ==========
+var fragmentModeActive = false;
+var fragmentDuration = 10 * 60; // default 10 min
+var fragmentRemaining = 10 * 60;
+var fragmentInterval = null;
+var fragmentStartedAt = null;
+var FRAGMENT_SESSIONS_KEY = 'pomodoro_fragment_sessions';
+
+function loadFragmentSessions() {
+  return JSON.parse(localStorage.getItem(FRAGMENT_SESSIONS_KEY) || '[]');
+}
+function saveFragmentSession(session) {
+  var sessions = loadFragmentSessions();
+  sessions.push(session);
+  localStorage.setItem(FRAGMENT_SESSIONS_KEY, JSON.stringify(sessions));
+}
+
+// ========== FRAGMENT MODE SWITCH ==========
+function switchToFragmentMode() {
+  fragmentModeActive = true;
+  // Hide standard UI
+  document.getElementById('durationSelector').style.display = 'none';
+  document.getElementById('fragmentDurationSelector').style.display = 'flex';
+  document.getElementById('fragmentStatusLabel').style.display = 'block';
+  // Set orange theme on progress circle
+  var pc = document.getElementById('progressCircle');
+  if (pc) pc.style.stroke = '#FF8C42';
+  // Set timer label
+  var lbl = document.getElementById('timerLabel');
+  if (lbl) lbl.textContent = '碎片专注';
+  // Reset to selected fragment duration
+  var activeFBtn = document.querySelector('.fragment-duration-btn.active');
+  var mins = activeFBtn ? parseInt(activeFBtn.dataset.fminutes) : 10;
+  fragmentDuration = mins * 60;
+  fragmentRemaining = fragmentDuration;
+  updateTimerDisplay(fragmentRemaining);
+  updateProgress(1);
+  // Stop any running standard timer
+  stopTimer();
+  timerState = 'stopped';
+  btnStartPause.textContent = '\u25B6';
+}
+
+function switchToStandardMode() {
+  fragmentModeActive = false;
+  if (fragmentInterval) { clearInterval(fragmentInterval); fragmentInterval = null; }
+  // Show standard UI
+  document.getElementById('durationSelector').style.display = 'flex';
+  document.getElementById('fragmentDurationSelector').style.display = 'none';
+  document.getElementById('fragmentStatusLabel').style.display = 'none';
+  // Restore red theme
+  var pc = document.getElementById('progressCircle');
+  if (pc) pc.style.stroke = '';
+  var lbl = document.getElementById('timerLabel');
+  if (lbl) lbl.textContent = '专注时间';
+  // Restore timer display
+  timerRemaining = timerDuration;
+  updateTimerDisplay(timerRemaining);
+  updateProgress(1);
+  timerState = 'stopped';
+  btnStartPause.textContent = '\u25B6';
+}
+
+// Mode switcher button handler
+document.getElementById('modeSwitcher').addEventListener('click', function(e) {
+  var btn = e.target.closest('.mode-switcher-btn');
+  if (!btn) return;
+  if (fragmentInterval) return; // don't switch while running
+  document.querySelectorAll('.mode-switcher-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (btn.dataset.switch === 'fragment') {
+    switchToFragmentMode();
+  } else {
+    switchToStandardMode();
+  }
+});
+
+// Fragment duration button handler
+document.getElementById('fragmentDurationSelector').addEventListener('click', function(e) {
+  var btn = e.target.closest('.fragment-duration-btn');
+  if (!btn) return;
+  if (fragmentInterval) return; // don't change while running
+  document.querySelectorAll('.fragment-duration-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('fragmentCustomDuration').value = '';
+  var mins = parseInt(btn.dataset.fminutes);
+  fragmentDuration = mins * 60;
+  fragmentRemaining = fragmentDuration;
+  updateTimerDisplay(fragmentRemaining);
+  updateProgress(1);
+});
+
+// Fragment custom duration input
+document.getElementById('fragmentCustomDuration').addEventListener('change', function() {
+  var mins = parseInt(this.value);
+  if (mins < 1) mins = 1;
+  if (mins > 20) mins = 20;
+  this.value = mins;
+  document.querySelectorAll('.fragment-duration-btn').forEach(function(b) { b.classList.remove('active'); });
+  fragmentDuration = mins * 60;
+  fragmentRemaining = fragmentDuration;
+  updateTimerDisplay(fragmentRemaining);
+  updateProgress(1);
+});
+
+// ========== FRAGMENT TIMER ==========
+function startFragmentTimer() {
+  if (fragmentInterval) return;
+  fragmentStartedAt = Date.now();
+  timerState = 'running';
+  btnStartPause.textContent = '\u23F8';
+  fragmentInterval = setInterval(function() {
+    fragmentRemaining--;
+    if (fragmentRemaining <= 0) {
+      fragmentRemaining = 0;
+      clearInterval(fragmentInterval);
+      fragmentInterval = null;
+      timerState = 'stopped';
+      btnStartPause.textContent = '\u25B6';
+      updateTimerDisplay(0);
+      updateProgress(0);
+      // Remove blink
+      var pc = document.getElementById('progressCircle');
+      if (pc) pc.classList.remove('fragment-blink');
+      onFragmentComplete();
+      return;
+    }
+    updateTimerDisplay(fragmentRemaining);
+    updateProgress(fragmentRemaining / fragmentDuration);
+    // Last 10 seconds: blink
+    var pc = document.getElementById('progressCircle');
+    if (pc) {
+      if (fragmentRemaining <= 10) pc.classList.add('fragment-blink');
+      else pc.classList.remove('fragment-blink');
+    }
+  }, 1000);
+}
+
+function onFragmentComplete() {
+  var mins = Math.round(fragmentDuration / 60);
+  saveFragmentSession({ date: getTodayKey(), duration: fragmentDuration, type: 'completed', ts: Date.now() });
+  document.getElementById('fragmentCompleteText').textContent = '恭喜！你回收了 ' + mins + ' 分钟';
+  document.getElementById('fragmentCompleteDialog').style.display = 'flex';
+  checkFragmentMilestones();
+}
+
+document.getElementById('fragmentCompleteBtn').addEventListener('click', function() {
+  document.getElementById('fragmentCompleteDialog').style.display = 'none';
+  // Reset fragment timer
+  var pc = document.getElementById('progressCircle');
+  if (pc) { pc.classList.remove('fragment-blink'); pc.style.stroke = '#FF8C42'; }
+  fragmentRemaining = fragmentDuration;
+  updateTimerDisplay(fragmentRemaining);
+  updateProgress(1);
+});
+
+// Attempt to abandon fragment (called from btnReset in fragment mode)
+function tryAbandonFragment() {
+  if (!fragmentInterval) return;
+  // Pause first
+  clearInterval(fragmentInterval);
+  fragmentInterval = null;
+  document.getElementById('fragmentAbandonText').textContent = '放弃本次回收？你将损失这 ' + Math.round(fragmentDuration / 60) + ' 分钟。';
+  document.getElementById('fragmentAbandonDialog').style.display = 'flex';
+}
+
+document.getElementById('fragmentAbandonCancelBtn').addEventListener('click', function() {
+  document.getElementById('fragmentAbandonDialog').style.display = 'none';
+  // Resume
+  if (timerState === 'running') startFragmentTimer();
+});
+
+document.getElementById('fragmentAbandonConfirmBtn').addEventListener('click', function() {
+  document.getElementById('fragmentAbandonDialog').style.display = 'none';
+  timerState = 'stopped';
+  btnStartPause.textContent = '\u25B6';
+  saveFragmentSession({ date: getTodayKey(), duration: fragmentDuration, type: 'wasted', ts: Date.now() });
+  var pc = document.getElementById('progressCircle');
+  if (pc) { pc.classList.remove('fragment-blink'); pc.style.stroke = '#FF8C42'; }
+  fragmentRemaining = fragmentDuration;
+  updateTimerDisplay(fragmentRemaining);
+  updateProgress(1);
+});
+
+// ========== FRAGMENT STATS ==========
+function renderFragmentStats() {
+  if (!featureFlags.fragment) { document.getElementById('fragmentStatsCard').style.display = 'none'; return; }
+  document.getElementById('fragmentStatsCard').style.display = 'block';
+  var sessions = loadFragmentSessions();
+  var completed = sessions.filter(function(s) { return s.type === 'completed'; });
+  var wasted = sessions.filter(function(s) { return s.type === 'wasted'; });
+  var totalMins = completed.reduce(function(sum, s) { return sum + Math.round(s.duration / 60); }, 0);
+  // Weekly
+  var now = new Date();
+  var weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+  var weeklyMins = completed.filter(function(s) { return new Date(s.ts) >= weekAgo; }).reduce(function(sum, s) { return sum + Math.round(s.duration / 60); }, 0);
+
+  var toTimeStr = function(mins) {
+    if (mins >= 60) { var h = Math.floor(mins / 60); var m = mins % 60; return m > 0 ? h + '时' + m + '分' : h + '小时'; }
+    return mins + '分';
+  };
+  document.getElementById('fragStatTotal').textContent = toTimeStr(totalMins);
+  document.getElementById('fragStatWeekly').textContent = toTimeStr(weeklyMins);
+  document.getElementById('fragStatCount').textContent = completed.length;
+  document.getElementById('fragStatWasted').textContent = wasted.length;
+
+  // Progress ring: goal = 6000 minutes (100 hours)
+  var goalMins = 6000;
+  var pct = Math.min(1, totalMins / goalMins);
+  var circumference = 263.89;
+  var offset = circumference * (1 - pct);
+  document.getElementById('fragRingProgress').style.strokeDashoffset = offset;
+  document.getElementById('fragRingLabel').textContent = '目标：100小时 (' + Math.round(pct * 100) + '%)';
+}
+
+// ========== FRAGMENT MILESTONES & BADGES ==========
+var FRAGMENT_MILESTONES = [
+  { mins: 60, badge: '碎片猎人', icon: '🏹', desc: '累计回收达到60分钟' },
+  { mins: 300, badge: '时间拾荒者', icon: '♻️', desc: '累计回收达到5小时' },
+  { mins: 600, badge: '效率大师', icon: '⚡', desc: '累计回收达到10小时' },
+  { mins: 1440, badge: '传奇大师', icon: '🌟', desc: '累计回收达到24小时' }
+];
+
+function checkFragmentMilestones() {
+  var sessions = loadFragmentSessions().filter(function(s) { return s.type === 'completed'; });
+  var totalMins = sessions.reduce(function(sum, s) { return sum + Math.round(s.duration / 60); }, 0);
+  var earned = JSON.parse(localStorage.getItem('pomodoro_fragment_badges') || '[]');
+  FRAGMENT_MILESTONES.forEach(function(m) {
+    if (totalMins >= m.mins && earned.indexOf(m.badge) === -1) {
+      earned.push(m.badge);
+      localStorage.setItem('pomodoro_fragment_badges', JSON.stringify(earned));
+      showBadgePopup(m);
+    }
+  });
+}
+
+var badgePopupTimer = null;
+function showBadgePopup(milestone) {
+  var popup = document.getElementById('badgePopup');
+  document.getElementById('badgePopupIcon').textContent = milestone.icon;
+  document.getElementById('badgePopupTitle').textContent = milestone.badge;
+  document.getElementById('badgePopupDesc').textContent = milestone.desc;
+  popup.style.display = 'flex';
+  if (badgePopupTimer) clearTimeout(badgePopupTimer);
+  badgePopupTimer = setTimeout(function() { popup.style.display = 'none'; }, 4000);
+}
+
+// ========== HOOK FRAGMENT INTO EXISTING START/STOP ==========
+// Use capture phase so it fires before existing non-capture listeners
+btnStartPause.addEventListener('click', function(e) {
+  if (!fragmentModeActive) return; // let original handlers work
+  e.stopImmediatePropagation();
+  if (timerState === 'stopped' || timerState === 'paused') {
+    startFragmentTimer();
+  } else if (timerState === 'running') {
+    // Pause fragment
+    clearInterval(fragmentInterval);
+    fragmentInterval = null;
+    timerState = 'paused';
+    btnStartPause.textContent = '\u25B6';
+  }
+}, true); // capture phase
+
+btnReset.addEventListener('click', function(e) {
+  if (!fragmentModeActive) return;
+  e.stopImmediatePropagation();
+  if (timerState === 'running') {
+    tryAbandonFragment();
+  } else {
+    fragmentRemaining = fragmentDuration;
+    updateTimerDisplay(fragmentRemaining);
+    updateProgress(1);
+    var pc = document.getElementById('progressCircle');
+    if (pc) pc.classList.remove('fragment-blink');
+  }
+}, true); // capture phase
+
+// Hook renderFragmentStats into renderStats
+var _origRenderStats = renderStats;
+window.renderStats = function() {
+  _origRenderStats();
+  renderFragmentStats();
+};
+
+// Init feature flags on load
+applyFeatureFlags();
+</script>
 </body>
 </html>
