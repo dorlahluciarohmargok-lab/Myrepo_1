@@ -4832,7 +4832,6 @@ document.getElementById('stabilityPermissionEnable').addEventListener('click', f
     motionPermissionGranted = true;
     motionPermissionAsked = true;
     localStorage.setItem('pomodoro_motion_permission', 'granted');
-    localStorage.setItem('pomodoro_motion_asked', '1');
     if (window._stabilityPermissionCallback) window._stabilityPermissionCallback(true);
   }
 });
