@@ -1260,12 +1260,12 @@ body::before {
   <!-- Confirm Pause Dialog (focus mode) -->
   <div class="confirm-dialog" id="confirmPauseDialog" style="display:none;">
     <div class="confirm-dialog-content">
-      <div class="confirm-dialog-emoji">⚠️</div>
-      <div class="confirm-dialog-title">确定要暂停吗？</div>
-      <div class="confirm-dialog-text">专注模式下暂停会打断你的心流状态，坚持住！</div>
+      <div class="confirm-dialog-emoji">⏸</div>
+      <div class="confirm-dialog-title">暂停专注？</div>
+      <div class="confirm-dialog-text">确定要暂停本次专注吗？</div>
       <div class="confirm-dialog-btns">
         <button class="confirm-btn-cancel" id="confirmPauseCancel">继续专注</button>
-        <button class="confirm-btn-ok" id="confirmPauseOk">确定暂停</button>
+        <button class="confirm-btn-ok" id="confirmPauseOk">暂停</button>
       </div>
     </div>
   </div>
@@ -1273,12 +1273,25 @@ body::before {
   <!-- Confirm End Dialog (general mode) -->
   <div class="confirm-dialog" id="confirmEndDialog" style="display:none;">
     <div class="confirm-dialog-content">
-      <div class="confirm-dialog-emoji">🤔</div>
-      <div class="confirm-dialog-title">时间还没到哦</div>
-      <div class="confirm-dialog-text">坚持完成会更有成就感，确定要提前结束吗？</div>
+      <div class="confirm-dialog-emoji">🎯</div>
+      <div class="confirm-dialog-title">结束计时？</div>
+      <div class="confirm-dialog-text">确定要结束本次计时吗？</div>
       <div class="confirm-dialog-btns">
-        <button class="confirm-btn-cancel" id="confirmEndCancel">继续坚持</button>
-        <button class="confirm-btn-ok" id="confirmEndOk">确定结束</button>
+        <button class="confirm-btn-cancel" id="confirmEndCancel">取消</button>
+        <button class="confirm-btn-ok" id="confirmEndOk">确认结束</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Give Up Dialog (focus mode end) -->
+  <div class="confirm-dialog" id="confirmGiveUpDialog" style="display:none;">
+    <div class="confirm-dialog-content">
+      <div class="confirm-dialog-emoji">🍅</div>
+      <div class="confirm-dialog-title">放弃专注？</div>
+      <div class="confirm-dialog-text">确定要放弃本次专注吗？放弃后本次记录不会保存。</div>
+      <div class="confirm-dialog-btns">
+        <button class="confirm-btn-cancel" id="confirmGiveUpCancel">继续专注</button>
+        <button class="confirm-btn-ok" id="confirmGiveUpOk">放弃</button>
       </div>
     </div>
   </div>
@@ -2215,22 +2228,50 @@ giveUpBtn.addEventListener('touchend', endGiveUp);
 giveUpBtn.addEventListener('touchcancel', endGiveUp);
 
 // ========== OVERLAY ACTION BUTTONS ==========
+// --- Shared helper: actually perform pause ---
+function doOverlayPause() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerState = 'paused';
+  overlayPaused = true;
+  overlayPauseBtn.textContent = '▶ 继续';
+  overlayPauseBtn.classList.add('paused');
+  const emojiEl = document.getElementById('focusOverlayEmoji');
+  if (emojiEl) emojiEl.style.animationPlayState = 'paused';
+}
+
+// --- Shared helper: actually perform end/exit ---
+function doOverlayEnd() {
+  overlayPaused = false;
+  overlayPauseBtn.textContent = '⏸ 暂停';
+  overlayPauseBtn.classList.remove('paused');
+  const emojiEl = document.getElementById('focusOverlayEmoji');
+  if (emojiEl) emojiEl.style.animationPlayState = 'running';
+  stopTimer();
+  timerState = 'stopped';
+  btnStartPause.textContent = '\u25B6';
+  btnStartPause.style.display = 'flex';
+  btnReset.style.display = 'flex';
+  if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
+  else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
+  if (focusMode === 'focus' && focusModeActive) exitFocusMode(false);
+  else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
+  else if (focusMode === 'normal' && focusModeActive) exitNormalMode();
+}
+
 // --- Pause Button: toggle pause/resume, stay on overlay ---
 let overlayPaused = false;
 const overlayPauseBtn = document.getElementById('overlayPauseBtn');
 
 overlayPauseBtn.addEventListener('click', () => {
   if (!overlayPaused) {
-    // Pause the timer, stay on overlay
-    clearInterval(timerInterval);
-    timerInterval = null;
-    timerState = 'paused';
-    overlayPaused = true;
-    overlayPauseBtn.textContent = '▶ 继续';
-    overlayPauseBtn.classList.add('paused');
-    // Pause the focus overlay emoji animation
-    const emojiEl = document.getElementById('focusOverlayEmoji');
-    if (emojiEl) emojiEl.style.animationPlayState = 'paused';
+    // Focus mode: show confirmation dialog first
+    if (focusMode === 'focus') {
+      document.getElementById('confirmPauseDialog').style.display = 'flex';
+      return;
+    }
+    // Normal / General mode: pause directly, stay on overlay
+    doOverlayPause();
   } else {
     // Resume the timer, stay on overlay
     overlayPaused = false;
@@ -2295,28 +2336,20 @@ function startEndHold(e) {
     const pct = Math.min(100, (elapsed / 3000) * 100);
     endProgress.style.width = pct + '%';
     if (elapsed >= 3000) {
-      // Successfully held for 3 seconds - end the session
+      // Successfully held for 3 seconds
       clearInterval(endProgressInterval);
       endProgressInterval = null;
       overlayEndBtn.classList.remove('holding');
       endProgress.style.width = '0%';
-      // Reset overlay pause state
-      overlayPaused = false;
-      overlayPauseBtn.textContent = '⏸ 暂停';
-      overlayPauseBtn.classList.remove('paused');
-      const emojiEl = document.getElementById('focusOverlayEmoji');
-      if (emojiEl) emojiEl.style.animationPlayState = 'running';
-      // Stop the timer and exit overlay
-      stopTimer();
-      timerState = 'stopped';
-      btnStartPause.textContent = '\u25B6';
-      btnStartPause.style.display = 'flex';
-      btnReset.style.display = 'flex';
-      if (timerMode === 'countdown') { timerRemaining = timerDuration; updateTimerDisplay(timerRemaining); updateProgress(1); }
-      else { stopwatchElapsed = 0; updateTimerDisplay(0); updateProgress(0); }
-      if (focusMode === 'focus' && focusModeActive) exitFocusMode(false);
-      else if (focusMode === 'general' && focusModeActive) exitGeneralMode();
-      else if (focusMode === 'normal' && focusModeActive) exitNormalMode();
+      // Decide whether to show a confirmation dialog based on mode
+      if (focusMode === 'general' && focusModeActive) {
+        document.getElementById('confirmEndDialog').style.display = 'flex';
+      } else if (focusMode === 'focus' && focusModeActive) {
+        document.getElementById('confirmGiveUpDialog').style.display = 'flex';
+      } else {
+        // Normal mode: exit directly without dialog
+        doOverlayEnd();
+      }
     }
   }, 50);
 }
@@ -2342,15 +2375,29 @@ overlayEndBtn.addEventListener('contextmenu', e => e.preventDefault());
 
 document.getElementById('confirmPauseCancel').addEventListener('click', () => {
   document.getElementById('confirmPauseDialog').style.display = 'none';
+  // Do nothing - user chose to keep focusing
 });
 document.getElementById('confirmPauseOk').addEventListener('click', () => {
   document.getElementById('confirmPauseDialog').style.display = 'none';
+  // Actually perform pause
+  doOverlayPause();
 });
 document.getElementById('confirmEndCancel').addEventListener('click', () => {
   document.getElementById('confirmEndDialog').style.display = 'none';
+  // Reset progress bar state (hold was already cleared)
+  endProgress.style.width = '0%';
 });
 document.getElementById('confirmEndOk').addEventListener('click', () => {
   document.getElementById('confirmEndDialog').style.display = 'none';
+  doOverlayEnd();
+});
+document.getElementById('confirmGiveUpCancel').addEventListener('click', () => {
+  document.getElementById('confirmGiveUpDialog').style.display = 'none';
+  endProgress.style.width = '0%';
+});
+document.getElementById('confirmGiveUpOk').addEventListener('click', () => {
+  document.getElementById('confirmGiveUpDialog').style.display = 'none';
+  doOverlayEnd();
 });
 
 // ========== FOCUS MODE: Warning Button ==========
