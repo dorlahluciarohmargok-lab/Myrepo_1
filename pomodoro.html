@@ -1370,6 +1370,198 @@ body::before {
   font-family: 'Noto Sans SC', sans-serif;
 }
 </style>
+<style>
+/* ===== FEAT-003: 任务熵值系统 ===== */
+.entropy-estimator {
+  background: #fafafa;
+  border: 1.5px solid #eee;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.entropy-estimator-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.entropy-estimator-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.entropy-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.entropy-stepper-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--secondary);
+  background: white;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.entropy-stepper-btn:hover { border-color: var(--primary); color: var(--primary); }
+.entropy-stepper-value {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+  min-width: 32px;
+  text-align: center;
+}
+.entropy-stepper-label { font-size: 12px; color: var(--text-secondary); }
+.entropy-tag {
+  padding: 2px 7px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+.entropy-tag.normal { background: rgba(76,175,80,0.25); color: #fff; }
+.entropy-tag.warning { background: rgba(255,152,0,0.35); color: #fff; }
+.entropy-tag.danger { background: rgba(244,67,54,0.45); color: #fff; }
+.entropy-high-dialog {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10003;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0;
+}
+.entropy-high-dialog-content {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  padding: 28px 24px 40px;
+  width: 100%;
+  max-width: 430px;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
+  animation: entropySlideUp 0.3s ease;
+}
+@keyframes entropySlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.entropy-high-dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2C3E50;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.entropy-high-dialog-text {
+  font-size: 13px;
+  color: #7F8C8D;
+  margin-bottom: 24px;
+  line-height: 1.7;
+  text-align: center;
+}
+.entropy-high-dialog-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.entropy-btn-split {
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.entropy-btn-postpone {
+  padding: 14px;
+  border: 1.5px solid var(--secondary);
+  border-radius: 14px;
+  background: white;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.entropy-btn-continue {
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: #f5f5f5;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.entropy-deviation-popup {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  font-size: 13px;
+  color: var(--text-primary);
+  z-index: 9994;
+  max-width: 300px;
+  width: 90%;
+  text-align: center;
+  animation: badgeSlideUp 0.4s ease forwards;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.entropy-stats-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-top: 16px;
+}
+.entropy-stats-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+}
+.entropy-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.entropy-stat-item { text-align: center; }
+.entropy-stat-value {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+}
+.entropy-stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+.entropy-advice {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--secondary);
+  border-radius: 10px;
+  padding: 10px 14px;
+  line-height: 1.6;
+  text-align: center;
+}
+</style>
 
 </head>
 <body>
@@ -1486,6 +1678,14 @@ body::before {
             <div class="stability-stat-item"><div class="stability-stat-value" id="stabStatSessions">0</div><div class="stability-stat-label">检测次数</div></div>
             <div class="stability-stat-item" style="grid-column:span 1;"><div class="stability-stat-value" id="stabStatBestTime" style="font-size:14px;">--</div><div class="stability-stat-label">最易分心时段</div></div>
           </div>
+        </div>
+        <div class="entropy-stats-card" id="entropyStatsCard" style="display:none;">
+          <div class="entropy-stats-title">🌡️ 预估准确率</div>
+          <div class="entropy-stats-grid">
+            <div class="entropy-stat-item"><div class="entropy-stat-value" id="entropyStat30Avg">--</div><div class="entropy-stat-label">近30天平均偏差</div></div>
+            <div class="entropy-stat-item"><div class="entropy-stat-value" id="entropyStatTasks">0</div><div class="entropy-stat-label">有预估的任务数</div></div>
+          </div>
+          <div class="entropy-advice" id="entropyAdvice">暂无足够数据，先完成几个带预估的任务吧~</div>
         </div>
       </div>
     </div>
@@ -1705,6 +1905,16 @@ body::before {
         <option value="stopwatch">正计时</option>
       </select>
       <input type="number" class="duration-input" id="todoCreateDuration" placeholder="分钟" min="1" value="25">
+    </div>
+    <div class="entropy-estimator" id="entropyEstimator">
+      <div class="entropy-estimator-label">🍅 预估番茄数</div>
+      <div class="entropy-estimator-hint">预计需要几个番茄？不确定可以多选一个</div>
+      <div class="entropy-stepper">
+        <button class="entropy-stepper-btn" id="entropyMinus">−</button>
+        <span class="entropy-stepper-value" id="entropyValue">1</span>
+        <button class="entropy-stepper-btn" id="entropyPlus">+</button>
+        <span class="entropy-stepper-label">个番茄</span>
+      </div>
     </div>
     <div class="rich-editor-wrapper" style="flex:1;display:flex;flex-direction:column;min-height:0;position:relative;">
       <div class="rich-editor-toolbar" id="richEditorToolbar">
@@ -4879,6 +5089,250 @@ window.renderStats = function() {
 
 // Init
 applyFeatureFlags();
+</script>
+
+<div class="entropy-high-dialog" id="entropyHighDialog" style="display:none;">
+  <div class="entropy-high-dialog-content">
+    <div class="entropy-high-dialog-title">⚠️ 任务熵值过高</div>
+    <div class="entropy-high-dialog-text" id="entropyHighDialogText">你预估了 N 个番茄，已用了 M 个，任务可能比想象中大。</div>
+    <div class="entropy-high-dialog-btns">
+      <button class="entropy-btn-split" id="entropyBtnSplit">拆分任务</button>
+      <button class="entropy-btn-postpone" id="entropyBtnPostpone">延后截止</button>
+      <button class="entropy-btn-continue" id="entropyBtnContinue">继续硬扛</button>
+    </div>
+  </div>
+</div>
+<div class="entropy-deviation-popup" id="entropyDeviationPopup" style="display:none;"></div>
+
+<script>
+// ========== FEAT-003: 任务熵值系统 ==========
+
+// ========== ENTROPY: Stepper in create overlay ==========
+var entropyCurrentValue = 1;
+document.getElementById('entropyMinus').addEventListener('click', function() {
+  if (entropyCurrentValue > 1) { entropyCurrentValue--; document.getElementById('entropyValue').textContent = entropyCurrentValue; }
+});
+document.getElementById('entropyPlus').addEventListener('click', function() {
+  if (entropyCurrentValue < 10) { entropyCurrentValue++; document.getElementById('entropyValue').textContent = entropyCurrentValue; }
+});
+
+// Show/hide entropy estimator based on feature flag
+function applyEntropyUI() {
+  var est = document.getElementById('entropyEstimator');
+  if (est) est.style.display = featureFlags.entropy ? 'flex' : 'none';
+}
+
+// ========== ENTROPY: Extend addTodoFromOverlay ==========
+var _origAddTodoFromOverlay = addTodoFromOverlay;
+window.addTodoFromOverlay = function() {
+  var estPomodoros = featureFlags.entropy ? (parseInt(document.getElementById('entropyValue').textContent) || 1) : undefined;
+  _origAddTodoFromOverlay.apply(this, arguments);
+  if (featureFlags.entropy && todos.length > 0) {
+    var lastTodo = todos[todos.length - 1];
+    lastTodo.estimatedPomodoros = estPomodoros;
+    lastTodo.actualPomodoros = 0;
+    saveTodos();
+  }
+  entropyCurrentValue = 1;
+  document.getElementById('entropyValue').textContent = '1';
+};
+
+// ========== ENTROPY: Extend migrateTodos ==========
+var _origMigrateTodos = migrateTodos;
+window.migrateTodos = function() {
+  _origMigrateTodos.apply(this, arguments);
+  todos = todos.map(function(t) {
+    if (t.estimatedPomodoros === undefined) t.estimatedPomodoros = undefined;
+    if (t.actualPomodoros === undefined) t.actualPomodoros = 0;
+    return t;
+  });
+  saveTodos();
+};
+
+// ========== ENTROPY: Increment actual pomodoros ==========
+var _entropyCurrentTodoId = null;
+
+function incrementTodoActualPomodoros(todoId) {
+  if (!featureFlags.entropy) return;
+  var todo = todos.find(function(t) { return t.id === todoId; });
+  if (!todo || todo.estimatedPomodoros === undefined) return;
+  todo.actualPomodoros = (todo.actualPomodoros || 0) + 1;
+  saveTodos();
+  var actual = todo.actualPomodoros;
+  var estimated = todo.estimatedPomodoros;
+  if (actual >= estimated + 2) {
+    showEntropyHighDialog(todo);
+  }
+}
+
+// ========== ENTROPY: High-entropy dialog ==========
+var _entropyCurrentTodoForDialog = null;
+function showEntropyHighDialog(todo) {
+  _entropyCurrentTodoForDialog = todo;
+  var text = '你预估 ' + todo.estimatedPomodoros + ' 个番茄，已用了 ' + todo.actualPomodoros + ' 个，任务可能比想象中大。';
+  document.getElementById('entropyHighDialogText').textContent = text;
+  document.getElementById('entropyHighDialog').style.display = 'flex';
+}
+
+document.getElementById('entropyBtnSplit').addEventListener('click', function() {
+  document.getElementById('entropyHighDialog').style.display = 'none';
+  if (!_entropyCurrentTodoForDialog) return;
+  var parentTodo = _entropyCurrentTodoForDialog;
+  var subTitle = parentTodo.title + ' (子任务)';
+  var titleInput = document.getElementById('todoCreateTitle');
+  if (titleInput) titleInput.value = subTitle;
+  entropyCurrentValue = 1;
+  document.getElementById('entropyValue').textContent = '1';
+  document.getElementById('todoCreateOverlay').classList.add('active');
+  _entropyCurrentTodoForDialog = null;
+});
+
+document.getElementById('entropyBtnPostpone').addEventListener('click', function() {
+  document.getElementById('entropyHighDialog').style.display = 'none';
+  if (!_entropyCurrentTodoForDialog) return;
+  var todo = todos.find(function(t) { return t.id === _entropyCurrentTodoForDialog.id; });
+  if (todo) {
+    var suffix = '\n\n[已调整计划 ' + new Date().toLocaleDateString() + ']';
+    todo.content = (todo.content || '') + suffix;
+    saveTodos();
+  }
+  showToast('已在备注中追加"已调整计划"');
+  _entropyCurrentTodoForDialog = null;
+});
+
+document.getElementById('entropyBtnContinue').addEventListener('click', function() {
+  document.getElementById('entropyHighDialog').style.display = 'none';
+  _entropyCurrentTodoForDialog = null;
+});
+
+function showToast(msg) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#2C3E50;color:white;padding:10px 20px;border-radius:20px;font-size:13px;z-index:10010;font-family:Noto Sans SC,sans-serif;white-space:nowrap;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.parentNode && t.parentNode.removeChild(t); }, 2500);
+}
+
+// ========== ENTROPY: Deviation popup on todo completion ==========
+var _entropyDeviationTimer = null;
+function showEntropyDeviationPopup(todo) {
+  if (!featureFlags.entropy) return;
+  if (!todo.estimatedPomodoros || !todo.actualPomodoros) return;
+  var diff = todo.actualPomodoros - todo.estimatedPomodoros;
+  if (diff === 0) return;
+  var sign = diff > 0 ? '+' : '';
+  var popup = document.getElementById('entropyDeviationPopup');
+  popup.textContent = '你预估 ' + todo.estimatedPomodoros + ' 个，实际用了 ' + todo.actualPomodoros + ' 个，偏差 ' + sign + diff + ' 个番茄';
+  popup.style.display = 'block';
+  if (_entropyDeviationTimer) clearTimeout(_entropyDeviationTimer);
+  _entropyDeviationTimer = setTimeout(function() { popup.style.display = 'none'; }, 5000);
+}
+
+// ========== ENTROPY: Hook into renderTodos to show tags ==========
+var _origRenderTodos = renderTodos;
+window.renderTodos = function() {
+  _origRenderTodos.apply(this, arguments);
+  if (!featureFlags.entropy) return;
+  todos.forEach(function(todo) {
+    if (!todo.estimatedPomodoros) return;
+    var actual = todo.actualPomodoros || 0;
+    var estimated = todo.estimatedPomodoros;
+    var state = 'normal';
+    var icon = '🍅';
+    if (actual >= estimated + 2) { state = 'danger'; icon = '🔥'; }
+    else if (actual === estimated + 1) { state = 'warning'; }
+    var tagText = icon + ' ' + actual + '/' + estimated;
+    var card = document.querySelector('.todo-card[data-id="' + todo.id + '"]');
+    if (!card) return;
+    var badgesDiv = card.querySelector('.todo-card-badges');
+    if (!badgesDiv) return;
+    var existing = badgesDiv.querySelector('.entropy-tag');
+    if (existing) existing.parentNode.removeChild(existing);
+    var tag = document.createElement('span');
+    tag.className = 'entropy-tag ' + state;
+    tag.textContent = tagText;
+    badgesDiv.appendChild(tag);
+  });
+};
+
+// ========== ENTROPY: Hook into todo checkbox to show deviation popup ==========
+document.getElementById('todoList').addEventListener('click', function(e) {
+  var checkbox = e.target.closest('.todo-card-checkbox');
+  if (!checkbox || !featureFlags.entropy) return;
+  var id = parseInt(checkbox.dataset.id);
+  var todo = todos.find(function(t) { return t.id === id; });
+  if (todo && !todo.completed) {
+    setTimeout(function() { showEntropyDeviationPopup(todo); }, 50);
+  }
+}, true);
+
+// ========== ENTROPY: Hook into startTodoTimer ==========
+var _origStartTodoTimer = startTodoTimer;
+window.startTodoTimer = function(todoId) {
+  _entropyCurrentTodoId = todoId;
+  _origStartTodoTimer.apply(this, arguments);
+};
+
+// ========== ENTROPY: Hook into showCompletionCard ==========
+var _origShowCompletionCard3 = showCompletionCard;
+window.showCompletionCard = function(durationSeconds) {
+  _origShowCompletionCard3.apply(this, arguments);
+  if (!featureFlags.entropy || !_entropyCurrentTodoId) return;
+  var todo = todos.find(function(t) { return t.id === _entropyCurrentTodoId; });
+  if (!todo || !todo.estimatedPomodoros) return;
+  incrementTodoActualPomodoros(_entropyCurrentTodoId);
+  var actual = todo.actualPomodoros || 0;
+  var estimated = todo.estimatedPomodoros;
+  if (actual === estimated + 1) {
+    var dur = document.getElementById('completionCardDuration');
+    if (dur) dur.textContent = dur.textContent + ' · 比预估多1个🍅';
+  }
+};
+
+// ========== ENTROPY: Stats rendering ==========
+function renderEntropyStats() {
+  var card = document.getElementById('entropyStatsCard');
+  if (!card) return;
+  if (!featureFlags.entropy) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  var relevantTodos = todos.filter(function(t) {
+    return t.estimatedPomodoros && t.actualPomodoros > 0 && t.completed;
+  });
+  document.getElementById('entropyStatTasks').textContent = relevantTodos.length;
+  if (relevantTodos.length === 0) {
+    document.getElementById('entropyStat30Avg').textContent = '--';
+    document.getElementById('entropyAdvice').textContent = '暂无足够数据，先完成几个带预估的任务吧~';
+    return;
+  }
+  var totalDev = relevantTodos.reduce(function(s, t) { return s + (t.actualPomodoros - t.estimatedPomodoros); }, 0);
+  var avgDev = Math.round(totalDev / relevantTodos.length * 10) / 10;
+  var sign = avgDev >= 0 ? '+' : '';
+  document.getElementById('entropyStat30Avg').textContent = sign + avgDev;
+  var advice = '';
+  if (avgDev > 1) advice = '你通常低估了' + Math.abs(avgDev) + '个番茄，建议预估时多加1~2个。';
+  else if (avgDev < -0.5) advice = '你倾向于高估任务量，预估可以稍微保守一些~';
+  else advice = '预估准确率不错！继续保持这个节奏~';
+  document.getElementById('entropyAdvice').textContent = advice;
+}
+
+// ========== ENTROPY: Extend applyFeatureFlags ==========
+var _origApplyFeatureFlags3 = applyFeatureFlags;
+window.applyFeatureFlags = function() {
+  _origApplyFeatureFlags3.apply(this, arguments);
+  applyEntropyUI();
+  var card = document.getElementById('entropyStatsCard');
+  if (card) card.style.display = featureFlags.entropy ? 'block' : 'none';
+};
+
+// ========== ENTROPY: Hook renderStats ==========
+var _origRenderStats3 = renderStats;
+window.renderStats = function() {
+  _origRenderStats3.apply(this, arguments);
+  renderEntropyStats();
+};
+
+// Init
+applyEntropyUI();
 </script>
 
 </body>
